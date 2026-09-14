@@ -356,12 +356,14 @@ export const home = {
       labels: {
         prenom: "Prénom",
         email: "Email",
+        telephone: "Téléphone (optionnel)",
         entreprise: "Entreprise (optionnel)",
         message: "Décrivez votre besoin",
       },
       placeholders: {
         prenom: "Camille",
         email: "camille@entreprise.fr",
+        telephone: "06 12 34 56 78",
         entreprise: "Nom de la société",
         message: "Quelques lignes suffisent ; nous vous rappelons pour préciser votre besoin.",
       },
