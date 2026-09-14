@@ -11,6 +11,7 @@ const ContactSection = () => {
   const [form, setForm] = useState({
     prenom: "",
     email: "",
+    telephone: "",
     entreprise: "",
     situation: "projet" as SituationKey,
     message: "",
