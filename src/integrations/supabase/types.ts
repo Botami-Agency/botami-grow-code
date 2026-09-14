@@ -201,6 +201,7 @@ export type Database = {
           prochaine_action: string | null
           reponses: Json | null
           score: number | null
+          situation: string | null
           source_route: string | null
           statut: string | null
           updated_at: string | null
@@ -231,6 +232,7 @@ export type Database = {
           prochaine_action?: string | null
           reponses?: Json | null
           score?: number | null
+          situation?: string | null
           source_route?: string | null
           statut?: string | null
           updated_at?: string | null
@@ -261,6 +263,7 @@ export type Database = {
           prochaine_action?: string | null
           reponses?: Json | null
           score?: number | null
+          situation?: string | null
           source_route?: string | null
           statut?: string | null
           updated_at?: string | null
