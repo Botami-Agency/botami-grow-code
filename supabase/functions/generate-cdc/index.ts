@@ -286,11 +286,15 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    await supabase.from("leads").insert({
+    const leadId = crypto.randomUUID();
+
+    const { error: leadError } = await supabase.from("leads").insert({
+      id: leadId,
       first_name: "Lead cahier des charges",
       email,
       phone,
       company,
+      situation: "Générateur de cahier des charges",
       source_route: sourceRoute,
       activite: String(answers.activite ?? ""),
       reponses: answers,
@@ -306,6 +310,36 @@ Deno.serve(async (req) => {
       utm_term: utm.utm_term || null,
       consentement: consent,
     });
+
+    if (leadError) {
+      console.error("Enregistrement du lead échoué:", leadError);
+    }
+
+    // Notification interne — la ligne leads est la source de vérité
+    if (!leadError) {
+      for (const recipient of ["elias@botami-agency.com", "theo@botami-agency.com"]) {
+        try {
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "new-lead-notification",
+              recipientEmail: recipient,
+              idempotencyKey: `lead-notif-${leadId}-${recipient}`,
+              leadId,
+              templateData: {
+                firstName: "Lead cahier des charges",
+                email,
+                phone: phone || undefined,
+                company: company || undefined,
+                situation: "Générateur de cahier des charges",
+                sourceRoute,
+              },
+            },
+          });
+        } catch (e) {
+          console.error("Notification interne échouée:", String(e));
+        }
+      }
+    }
 
     // Envoi de l'email automatique au lead (CDC en PDF + lien de réservation)
     if (cdc_markdown) {

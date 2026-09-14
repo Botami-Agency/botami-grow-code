@@ -16,59 +16,92 @@ interface NewLeadProps {
   situation?: string
   message?: string
   sourceRoute?: string
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign?: string
+  utmTerm?: string
 }
 
-const NewLeadNotificationEmail = ({
-  firstName, email, phone, company, budget, companySize, situation, message, sourceRoute,
-}: NewLeadProps) => (
-  <Html lang="fr" dir="ltr">
-    <Head />
-    <Preview>Nouveau lead : {firstName || 'Inconnu'} — {company || 'N/A'}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>🔔 Nouveau lead reçu</Heading>
-        <Text style={text}>Un nouveau prospect a rempli le formulaire sur <strong>{SITE_NAME}</strong>.</Text>
-        <Hr style={hr} />
-        <Section style={detailSection}>
-          <Text style={label}>Prénom</Text>
-          <Text style={value}>{firstName || '—'}</Text>
-          <Text style={label}>Email</Text>
-          <Text style={value}>{email || '—'}</Text>
-          <Text style={label}>Téléphone</Text>
-          <Text style={value}>{phone || '—'}</Text>
-          <Text style={label}>Entreprise</Text>
-          <Text style={value}>{company || '—'}</Text>
-          <Text style={label}>Situation</Text>
-          <Text style={value}>{situation || '—'}</Text>
-          <Text style={label}>Message</Text>
-          <Text style={value}>{message || '—'}</Text>
-          <Text style={label}>Budget logiciel</Text>
-          <Text style={value}>{budget || '—'}</Text>
-          <Text style={label}>Taille de l'entreprise</Text>
-          <Text style={value}>{companySize || '—'}</Text>
-          <Text style={label}>Page source</Text>
-          <Text style={value}>{sourceRoute || '—'}</Text>
-        </Section>
+const campaignLine = (d: NewLeadProps) => {
+  const parts = [d.utmSource, d.utmMedium, d.utmCampaign, d.utmTerm]
+  if (!parts.some((p) => p && String(p).trim())) return null
+  return parts.map((p) => (p && String(p).trim() ? String(p) : '—')).join(' / ')
+}
 
-        <Hr style={hr} />
-        <Text style={footer}>Cet email a été envoyé automatiquement par {SITE_NAME}.</Text>
-      </Container>
-    </Body>
-  </Html>
-)
+const subjectContext = (data: Record<string, any>) =>
+  (data.company && String(data.company).trim()) ||
+  (data.situation && String(data.situation).trim()) ||
+  'sans entreprise'
+
+const NewLeadNotificationEmail = (props: NewLeadProps) => {
+  const {
+    firstName, email, phone, company, budget, companySize, situation, message, sourceRoute,
+  } = props
+  const campaign = campaignLine(props)
+  return (
+    <Html lang="fr" dir="ltr">
+      <Head />
+      <Preview>
+        Nouveau lead : {firstName || 'Inconnu'} — {subjectContext(props as Record<string, any>)}
+      </Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Heading style={h1}>🔔 Nouveau lead reçu</Heading>
+          <Text style={text}>Un nouveau prospect a rempli le formulaire sur <strong>{SITE_NAME}</strong>.</Text>
+          <Hr style={hr} />
+          <Section style={detailSection}>
+            <Text style={label}>Prénom</Text>
+            <Text style={value}>{firstName || '—'}</Text>
+            <Text style={label}>Email</Text>
+            <Text style={value}>{email || '—'}</Text>
+            <Text style={label}>Téléphone</Text>
+            <Text style={value}>{phone || '—'}</Text>
+            <Text style={label}>Entreprise</Text>
+            <Text style={value}>{company || '—'}</Text>
+            <Text style={label}>Situation</Text>
+            <Text style={value}>{situation || '—'}</Text>
+            <Text style={label}>Message</Text>
+            <Text style={{ ...value, whiteSpace: 'pre-wrap' as const }}>{message || '—'}</Text>
+            <Text style={label}>Budget logiciel</Text>
+            <Text style={value}>{budget || '—'}</Text>
+            <Text style={label}>Taille de l'entreprise</Text>
+            <Text style={value}>{companySize || '—'}</Text>
+            <Text style={label}>Page source</Text>
+            <Text style={value}>{sourceRoute || '—'}</Text>
+            {campaign ? (
+              <>
+                <Text style={label}>Campagne</Text>
+                <Text style={value}>{campaign}</Text>
+              </>
+            ) : null}
+          </Section>
+
+          <Hr style={hr} />
+          <Text style={footer}>Cet email a été envoyé automatiquement par {SITE_NAME}.</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 export const template = {
   component: NewLeadNotificationEmail,
-  subject: (data: Record<string, any>) => `Nouveau lead : ${data.firstName || 'Inconnu'} — ${data.company || 'N/A'}`,
+  subject: (data: Record<string, any>) =>
+    `Nouveau lead : ${data.firstName || 'Inconnu'} — ${subjectContext(data)} (${data.sourceRoute || '—'})`,
   displayName: 'Notification nouveau lead',
   previewData: {
     firstName: 'Jean',
     email: 'jean@example.com',
     phone: '06 12 34 56 78',
     company: 'Acme Corp',
+    situation: "J'ai un projet d'app",
+    message: 'Nous voulons remplacer notre outil de gestion des interventions.',
     budget: '300€ – 500€/mois',
     companySize: '11 – 50',
     sourceRoute: '/lp/google/logiciel-sur-mesure',
+    utmSource: 'google',
+    utmMedium: 'cpc',
+    utmCampaign: 'logiciel-sur-mesure',
   },
 } satisfies TemplateEntry
 

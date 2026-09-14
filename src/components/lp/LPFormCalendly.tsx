@@ -92,8 +92,8 @@ const LPFormCalendly = ({
     const leadId = crypto.randomUUID();
     const sourceRoute = route || window.location.pathname;
 
-    // Save lead to database
-    supabase.from("leads").insert({
+    // Save lead to database (attendre la persistance avant la notification)
+    await supabase.from("leads").insert({
       id: leadId,
       first_name: form.prenom,
       email: form.email,
@@ -102,7 +102,7 @@ const LPFormCalendly = ({
       budget: form.depense || null,
       company_size: form.taille || null,
       source_route: sourceRoute,
-    }).then();
+    });
 
     // Send notification emails
     const templateData = {
@@ -122,6 +122,7 @@ const LPFormCalendly = ({
           templateName: "new-lead-notification",
           recipientEmail: recipient,
           idempotencyKey: `lead-notif-${leadId}-${recipient}`,
+          leadId,
           templateData,
         },
       });

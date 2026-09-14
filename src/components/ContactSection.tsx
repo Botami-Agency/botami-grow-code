@@ -11,6 +11,7 @@ const ContactSection = () => {
   const [form, setForm] = useState({
     prenom: "",
     email: "",
+    telephone: "",
     entreprise: "",
     situation: "projet" as SituationKey,
     message: "",
@@ -40,7 +41,9 @@ const ContactSection = () => {
       id: leadId,
       first_name: form.prenom,
       email: form.email,
-      phone: null,
+      phone: form.telephone || null,
+      company: form.entreprise || null,
+      situation: situationLabel || null,
       message: `[${situationLabel}]${form.entreprise ? ` (${form.entreprise})` : ""}${
         form.message ? ` — ${form.message}` : ""
       }`,
@@ -59,6 +62,7 @@ const ContactSection = () => {
     const templateData = {
       firstName: form.prenom,
       email: form.email,
+      phone: form.telephone || undefined,
       company: form.entreprise || undefined,
       situation: situationLabel || undefined,
       message: form.message || undefined,
@@ -71,6 +75,7 @@ const ContactSection = () => {
           templateName: "new-lead-notification",
           recipientEmail: recipient,
           idempotencyKey: `lead-notif-${leadId}-${recipient}`,
+          leadId,
           templateData,
         },
       });
@@ -201,7 +206,28 @@ const ContactSection = () => {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 sm:col-span-2">
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="telephone"
+                    className="font-mono text-[11px] uppercase tracking-[0.18em] text-n-500"
+                  >
+                    {c.form.labels.telephone}
+                  </label>
+                  <input
+                    id="telephone"
+                    name="telephone"
+                    type="tel"
+                    autoComplete="tel"
+                    placeholder={c.form.placeholders.telephone}
+                    value={form.telephone}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, telephone: e.target.value }))
+                    }
+                    className="h-11 px-3.5 border-[1.5px] border-ink rounded-[10px] bg-cream text-[15px] text-ink placeholder:text-n-500 focus:border-ambre focus:outline-none transition-colors font-sans"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
                   <label
                     htmlFor="entreprise"
                     className="font-mono text-[11px] uppercase tracking-[0.18em] text-n-500"

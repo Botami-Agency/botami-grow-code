@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
   let recipientEmail: string
   let idempotencyKey: string
   let messageId: string
+  let leadId: string | undefined
   let templateData: Record<string, any> = {}
   try {
     const body = await req.json()
@@ -66,6 +67,7 @@ Deno.serve(async (req) => {
     recipientEmail = body.recipientEmail || body.recipient_email
     messageId = crypto.randomUUID()
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
+    leadId = body.leadId || body.lead_id || undefined
     if (body.templateData && typeof body.templateData === 'object') {
       templateData = body.templateData
     }
@@ -124,6 +126,77 @@ Deno.serve(async (req) => {
 
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // 1bis. Lead notifications: the DB row is the source of truth.
+  // Values sent by the frontend are only used as a fallback for null columns.
+  if (templateName === 'new-lead-notification' && leadId) {
+    let lead: Record<string, any> | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('id', leadId)
+        .maybeSingle()
+      if (error) {
+        console.error('Lead lookup failed', { error, leadId })
+        break
+      }
+      if (data) {
+        lead = data
+        break
+      }
+      if (attempt < 2) await new Promise((r) => setTimeout(r, 500))
+    }
+
+    if (lead) {
+      const pick = (dbValue: any, fallback: any) => {
+        const v = dbValue === null || dbValue === undefined || dbValue === '' ? undefined : dbValue
+        const f = fallback === null || fallback === undefined || fallback === '' ? undefined : fallback
+        return v ?? f
+      }
+
+      // Résumé des réponses du questionnaire (générateur de cahier des charges)
+      let answersSummary: string | undefined
+      const reponses = lead.reponses
+      if (reponses && typeof reponses === 'object') {
+        const lines = Object.entries(reponses as Record<string, unknown>)
+          .map(([k, v]) => {
+            const val = Array.isArray(v) ? v.join(', ') : v == null ? '' : String(v)
+            return val.trim() ? `${k} : ${val}` : null
+          })
+          .filter(Boolean) as string[]
+        if (lines.length) answersSummary = lines.join('\n')
+      }
+
+      const activite = lead.activite && String(lead.activite).trim() ? String(lead.activite) : undefined
+      const baseMessage = pick(lead.message, templateData.message)
+      const messageParts = [
+        activite ? `Activité : ${activite}` : null,
+        baseMessage || null,
+        answersSummary || null,
+      ].filter(Boolean) as string[]
+
+      templateData = {
+        ...templateData,
+        firstName: pick(lead.first_name, templateData.firstName),
+        email: pick(lead.email, templateData.email),
+        phone: pick(lead.phone, templateData.phone),
+        company: pick(lead.company, templateData.company),
+        budget: pick(lead.budget, templateData.budget),
+        companySize: pick(lead.company_size, templateData.companySize),
+        situation: pick(lead.situation, templateData.situation),
+        message: messageParts.length ? messageParts.join('\n\n') : undefined,
+        sourceRoute: pick(lead.source_route, templateData.sourceRoute),
+        utmSource: pick(lead.utm_source, templateData.utmSource),
+        utmMedium: pick(lead.utm_medium, templateData.utmMedium),
+        utmCampaign: pick(lead.utm_campaign, templateData.utmCampaign),
+        utmTerm: pick(lead.utm_term, templateData.utmTerm),
+      }
+    } else {
+      console.warn('Lead row not found — falling back to frontend templateData', { leadId })
+    }
+  }
+
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
