@@ -41,7 +41,9 @@ const ContactSection = () => {
       id: leadId,
       first_name: form.prenom,
       email: form.email,
-      phone: null,
+      phone: form.telephone || null,
+      company: form.entreprise || null,
+      situation: situationLabel || null,
       message: `[${situationLabel}]${form.entreprise ? ` (${form.entreprise})` : ""}${
         form.message ? ` — ${form.message}` : ""
       }`,
@@ -60,6 +62,7 @@ const ContactSection = () => {
     const templateData = {
       firstName: form.prenom,
       email: form.email,
+      phone: form.telephone || undefined,
       company: form.entreprise || undefined,
       situation: situationLabel || undefined,
       message: form.message || undefined,
@@ -72,6 +75,7 @@ const ContactSection = () => {
           templateName: "new-lead-notification",
           recipientEmail: recipient,
           idempotencyKey: `lead-notif-${leadId}-${recipient}`,
+          leadId,
           templateData,
         },
       });
