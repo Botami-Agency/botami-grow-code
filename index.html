@@ -26,7 +26,14 @@
       })(window, document, "clarity", "script", "w8zd4ye9r8");
     </script>
 
-    <!-- Google Ads Conversion Functions -->
+    <!-- Meta Pixel — Botami Software (PageView des changements de page : src/components/MetaPixelPageView.tsx) -->
+    <script>
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', '1650601729574589');
+      fbq('track', 'PageView');
+    </script>
+
+    <!-- Conversions : Google Ads + Meta (Lead = formulaire, Schedule = rendez-vous) -->
     <script>
       function gtag_report_lead_form() {
         gtag('event', 'conversion', {
@@ -34,6 +41,7 @@
           'value': 1.0,
           'currency': 'EUR'
         });
+        try { fbq('track', 'Lead'); } catch (e) {}
       }
       function gtag_report_rdv() {
         gtag('event', 'conversion', {
@@ -41,6 +49,7 @@
           'value': 1.0,
           'currency': 'EUR'
         });
+        try { fbq('track', 'Schedule'); } catch (e) {}
       }
     </script>
     <!-- Generic fallbacks — overridden per-route by react-helmet-async (<SEO />) -->

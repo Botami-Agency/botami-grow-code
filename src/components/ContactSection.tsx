@@ -81,6 +81,9 @@ const ContactSection = () => {
       });
     });
 
+    // Lead Meta uniquement : la conversion Google Ads n'a jamais été branchée sur ce formulaire.
+    try { (window as any).fbq?.("track", "Lead"); } catch {}
+
     setLoading(false);
     setSubmitted(true);
   };

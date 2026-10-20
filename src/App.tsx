@@ -28,7 +28,7 @@ import MentionsLegales from "./pages/MentionsLegales.tsx";
 import CGV from "./pages/CGV.tsx";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite.tsx";
 import PolitiqueCookies from "./pages/PolitiqueCookies.tsx";
-import CookieBanner from "./components/CookieBanner.tsx";
+import MetaPixelPageView from "./components/MetaPixelPageView.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import GestionIntervention from "./pages/GestionIntervention.tsx";
@@ -41,8 +41,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <CookieBanner />
+      {/* Bandeau cookies désactivé le 20/10/2026 le temps d'un test de tracking (Elias) — remettre <CookieBanner /> ensuite. */}
       <BrowserRouter>
+        <MetaPixelPageView />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/lp/prix" element={<LandingPrix />} />
