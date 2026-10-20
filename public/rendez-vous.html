@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appel de découverte — Botami Software</title>
+<meta name="description" content="Réservez 30 minutes avec Elias et Théo : on analyse votre projet d'application sur mesure et on vous dit comment le livrer en 4 à 8 semaines.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://software.botami-agency.com/rendez-vous.html">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="preconnect" href="https://twyzzagqvbhnzzhjelpl.supabase.co" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVnskPMBBSSJLq2I.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxRSW32RmYJp_I6.woff2">
+<script>
+// Les créneaux partent AVANT le rendu : ils sont prêts quand le formulaire est rempli.
+window.__slots = fetch("https://twyzzagqvbhnzzhjelpl.supabase.co/functions/v1/public-booking", {
+  method: "POST", headers: { "Content-Type": "application/json" }, body: '{"action":"slots"}'
+}).then(function (r) { return r.json(); }).catch(function () { return { ok: false }; });
+</script>
+<style>
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7oUXskPMBBSSJLq2I.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUXskPMBBSSJLq2I.woff2) format("woff2")}
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/spacegrotesk/v22/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj4PVnskPMBBSSJLq2I.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxRSW32RmYJp_I6.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAkJxRSW32RmYJp_I6.woff2) format("woff2")}
+@font-face{font-family:"DM Sans";font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAfJtRSW32RmYJp_I6.woff2) format("woff2")}
+:root{
+  --ambre:#C4872C;--ambre-dark:#A06B1E;--ambre-bg:#FEF3E2;--ink:#1A1A1A;--cream:#FAF7F2;--white:#fff;
+  --n200:#F0EBE3;--n300:#E5E0D8;--n500:#6B7280;--n700:#4B4B4B;--ok:#2E8F4F;--err:#B42318;
+  --display:"Space Grotesk","Helvetica Neue",Arial,sans-serif;--sans:"DM Sans","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);color:var(--ink);background:var(--cream);
+  background-image:radial-gradient(circle at 1px 1px,rgba(26,26,26,.018) 1px,transparent 0);background-size:4px 4px;
+  -webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:1120px;margin:0 auto;padding:0 32px;width:100%}
+header{padding:18px 0}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--display);font-size:17px;letter-spacing:-.01em}
+.brand b{font-weight:700;color:var(--ink)}.brand>span>span{color:var(--n500)}
+.brand svg{width:36px;height:36px;display:block}
+main{flex:1;padding:24px 0 56px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--n500)}
+h1{font-family:var(--display);font-weight:700;letter-spacing:-.04em;line-height:.98;font-size:clamp(36px,6vw,64px);margin:14px 0 12px;text-wrap:balance}
+h1 i{font-weight:500;color:var(--ambre)}
+.lead{font-size:17px;color:var(--n700);line-height:1.6;max-width:640px}
+.card{margin-top:32px;background:var(--white);border:1px solid var(--n300);border-radius:20px;overflow:hidden;box-shadow:0 1px 2px rgba(26,26,26,.04),0 12px 40px -18px rgba(26,26,26,.18)}
+.steps{display:flex;justify-content:center;gap:28px;padding:14px 16px;border-bottom:1px solid var(--n300);font-size:14px;color:var(--n500)}
+.steps span{display:inline-flex;align-items:center;gap:8px}
+.steps span::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--n300)}
+.steps .on{color:var(--ink)}.steps .on::before{background:var(--ambre)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+.col{padding:28px 32px}
+.col+.col{border-left:1px solid var(--n300)}
+h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0 18px;font-size:14px;color:var(--n700)}
+.meta span{display:inline-flex;align-items:center;gap:6px}
+.meta svg{width:16px;height:16px;color:var(--ambre-dark)}
+.who{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--n700);margin-bottom:20px}
+.who .av{display:flex}
+.who .av img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--white);background:var(--n200)}
+.who .av img+img{margin-left:-10px}
+form{display:grid;gap:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:13px;font-weight:500;color:var(--n700);margin-bottom:5px}
+label em{font-style:normal;color:var(--ambre-dark)}
+input,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--cream);border:1px solid var(--n300);border-radius:10px;padding:11px 13px;outline:none;transition:border-color .15s,box-shadow .15s}
+textarea{resize:vertical;min-height:92px;line-height:1.5}
+input:focus,textarea:focus{border-color:var(--ambre);box-shadow:0 0 0 3px rgba(196,135,44,.18);background:var(--white)}
+input[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--err)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.legal{font-size:12px;color:var(--n500);line-height:1.5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:10px;padding:14px 18px;background:var(--ambre);color:var(--white);font-weight:600;font-size:15px;transition:background .15s,transform .05s}
+.btn:hover{background:var(--ambre-dark)}.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn svg{width:16px;height:16px}
+.cal{position:relative}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head b{font-family:var(--display);font-size:18px;font-weight:500;text-transform:capitalize}
+.nav{display:flex;gap:6px}
+.nav button{width:34px;height:34px;border-radius:8px;border:1px solid var(--n300);background:var(--white);display:grid;place-items:center;color:var(--ink)}
+.nav button[disabled]{opacity:.35;cursor:default}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.dow{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--n500);margin-bottom:6px}
+.days button,.days i{aspect-ratio:1;max-height:48px;border-radius:10px;border:0;background:none;font-size:15px;color:#B9B4AC;font-style:normal;display:grid;place-items:center}
+.days button{background:var(--ambre-bg);color:var(--ambre-dark);font-weight:600;position:relative}
+.days button:hover{background:#FBE6C5}
+.days button[aria-pressed=true]{background:var(--ambre);color:var(--white)}
+.days button.today::after{content:"";position:absolute;bottom:6px;width:4px;height:4px;border-radius:50%;background:currentColor}
+.times{margin-top:18px}
+.times p{font-size:14px;color:var(--n700);margin-bottom:10px}
+.times p b{font-weight:600}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.tgrid button{border:1px solid var(--n300);background:var(--white);border-radius:9px;padding:10px 0;font-weight:500;font-size:14px;color:var(--ink)}
+.tgrid button:hover{border-color:var(--ambre);color:var(--ambre-dark)}
+.tgrid button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--white)}
+.tz{margin-top:14px;font-size:12px;color:var(--n500)}
+.confirm{margin-top:18px}
+.lock{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.55);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);border-radius:12px}
+.lock div{background:var(--white);border:1px solid var(--n300);border-radius:10px;padding:12px 18px;font-size:14px;box-shadow:0 6px 24px -10px rgba(26,26,26,.25);text-align:center;max-width:280px}
+.msg{font-size:14px;color:var(--n700);padding:24px 0;text-align:center}
+.err{color:var(--err);font-size:13px;margin-top:4px}
+.done{padding:48px 32px;text-align:center;max-width:560px;margin:0 auto}
+.done .ok{width:56px;height:56px;border-radius:50%;background:#E6F3EA;color:var(--ok);display:grid;place-items:center;margin:0 auto 18px}
+.done h2{font-size:28px}
+.done p{color:var(--n700);line-height:1.6;margin-top:10px}
+.done .when{font-family:var(--display);font-size:20px;font-weight:500;color:var(--ink);margin-top:14px;text-transform:capitalize}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:s .7s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.skel{height:220px;border-radius:12px;background:linear-gradient(90deg,var(--n200),#F7F3ED,var(--n200));background-size:200% 100%;animation:sk 1.2s ease-in-out infinite}
+@keyframes sk{to{background-position:-200% 0}}
+footer{padding:20px 0;border-top:1px solid var(--n300);font-size:12px;color:var(--n500)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between}
+footer a{text-decoration:none}footer a:hover{color:var(--ink)}
+@media (max-width:860px){
+  .wrap{padding:0 16px}
+  .grid{grid-template-columns:1fr}
+  .col{padding:22px 18px}
+  .col+.col{border-left:0;border-top:1px solid var(--n300)}
+  .row2{grid-template-columns:1fr}
+  .steps{gap:16px;font-size:13px}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/" aria-label="Accueil Botami Software"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"> <path fill="#c4872c" d="M242.89,285.2v2.53c0,3.51-.64,6.59-1.91,9.24-.7,1.44-1.58,2.75-2.65,3.93-.65.72-1.36,1.39-2.15,2.02-4.47,3.54-10.34,5.32-17.6,5.32h-31.39v-43.55h31.39c7.43,0,13.33,1.77,17.72,5.31.16.13.31.26.46.39,1.22,1.04,2.25,2.21,3.1,3.5,2.02,3.07,3.03,6.84,3.03,11.31ZM442.6,119.91v260.18c0,34.52-27.99,62.51-62.51,62.51H119.91c-34.52,0-62.51-27.99-62.51-62.51V119.91c0-34.52,27.99-62.51,62.51-62.51h260.18c34.52,0,62.51,27.99,62.51,62.51ZM369.53,288.77c0-10.08-2.45-18.25-7.34-24.51-4.9-6.25-11.44-11.21-19.62-14.87-8.19-3.66-17.43-6.54-27.73-8.65l-13.16-3.18c-7.77-1.78-14.44-3.86-20.01-6.21-2.38-1.01-4.54-2.15-6.47-3.42-1.06-.7-2.06-1.44-2.98-2.22-1.3-1.09-2.45-2.26-3.46-3.51-3.04-3.73-4.56-8.61-4.56-14.63,0-7.81,2.62-14.1,7.84-18.86.86-.78,1.8-1.53,2.8-2.23.05-.03.1-.07.16-.1,7.06-4.89,16.38-7.33,27.94-7.33,8.1,0,15.32,1.22,21.65,3.66,6.33,2.43,11.31,6.17,14.94,11.21,3.63,5.04,5.44,11.71,5.44,19.99v10.24h21.02v-10.24c0-11.7-2.75-21.41-8.23-29.13-5.49-7.72-13-13.57-22.54-17.56-9.53-3.98-20.3-5.98-32.28-5.98s-22.24,1.88-31.27,5.62c-2.97,1.23-5.72,2.63-8.25,4.22-1.08.67-2.13,1.38-3.13,2.12-3.78,2.79-6.99,6.04-9.63,9.75-4.98,6.99-7.47,15.28-7.47,24.87s2.23,17.43,6.71,23.53c2.61,3.56,5.81,6.72,9.6,9.47,1.05.76,2.13,1.49,3.26,2.18,1.81,1.11,3.72,2.14,5.75,3.1,7.93,3.74,17.04,6.91,27.34,9.51l13.17,3.17c7.93,1.79,14.85,3.86,20.76,6.22,5.91,2.35,10.51,5.4,13.8,9.14,3.29,3.74,4.94,8.78,4.94,15.12,0,9.1-3.63,16.66-10.89,22.67-7.26,6.02-17.81,9.02-31.65,9.02-11.97,0-22.01-2.71-30.14-8.14-1.03-.69-2.04-1.42-3.01-2.2.49-1.16.92-2.35,1.3-3.57,1.45-4.64,2.18-9.73,2.18-15.26v-2.54c0-8.43-1.56-15.27-4.68-20.5-3.13-5.23-6.88-9.25-11.27-12.03-4.39-2.78-8.44-4.68-12.15-5.7v-4.55c2.57-.82,5.26-2.03,8.04-3.63-3.63-2.79-6.75-5.95-9.33-9.46-2.72-3.71-4.7-8.01-5.91-12.87-1.03,3.38-2.98,6.21-5.85,8.49-4.47,3.54-10.16,5.31-17.09,5.31h-30.88v-42.54h30.88c7.1,0,12.83,1.74,17.22,5.2,1.94,1.52,3.44,3.33,4.52,5.42.81-8.04,3.43-15.23,7.84-21.42,2.67-3.74,5.91-7.07,9.67-9.97-2.29-1.56-4.78-2.95-7.47-4.16-8.02-3.63-17.43-5.45-28.23-5.45h-91.15v29.37h23.29v118.5h-23.29v29.37h92.16c10.64,0,19.96-1.86,27.98-5.57,2.76-1.27,5.31-2.75,7.65-4.41,1.02-.72,1.99-1.47,2.92-2.26,1.03.72,2.08,1.42,3.16,2.07,2.27,1.38,4.67,2.62,7.21,3.72,10.12,4.39,21.6,6.59,34.43,6.59s24.01-2.08,33.55-6.22c9.53-4.15,16.92-9.96,22.15-17.44,5.23-7.47,7.85-16.25,7.85-26.33Z"/> </svg><span><b>Botami</b> <span>Software</span></span></a>
+</div></header>
+
+<main><div class="wrap">
+  <div class="eyebrow">— Appel de découverte · 30 min · Visio</div>
+  <h1>Parlons de votre <i>application sur mesure.</i></h1>
+  <p class="lead">En 30 minutes, on analyse votre besoin, on vous dit ce qui est faisable, en combien de temps et pour quel budget. Sans engagement.</p>
+
+  <section class="card" id="card">
+    <div class="steps" aria-hidden="true"><span class="on" id="st1">Vos informations</span><span id="st2">Votre créneau</span></div>
+    <div class="grid" id="grid">
+      <div class="col">
+        <h2>Appel de découverte</h2>
+        <div class="meta">
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>30 min</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>Google Meet</span>
+          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Gratuit, sans engagement</span>
+        </div>
+        <div class="who"><span class="av"><img src="/rdv/elias.webp" alt="" width="32" height="32" loading="lazy"><img src="/rdv/theo.webp" alt="" width="32" height="32" loading="lazy"></span>Avec Elias &amp; Théo, cofondateurs</div>
+
+        <form id="f" novalidate>
+          <div class="row2">
+            <div><label for="name">Nom <em>*</em></label><input id="name" name="name" autocomplete="name" required></div>
+            <div><label for="company">Entreprise <em>*</em></label><input id="company" name="company" autocomplete="organization" required></div>
+          </div>
+          <div class="row2">
+            <div><label for="phone">Téléphone <em>*</em></label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="06 12 34 56 78" required></div>
+            <div><label for="email">Email <em>*</em></label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" required></div>
+          </div>
+          <div><label for="project">Votre projet <em>*</em></label><textarea id="project" name="project" placeholder="Ex. : un outil pour gérer nos interventions et la facturation, aujourd'hui sur Excel…" required></textarea></div>
+          <div class="hp" aria-hidden="true"><label for="website">Site web</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+          <div class="err" id="ferr" role="alert" hidden></div>
+          <button class="btn" type="submit" id="cont">Choisir mon créneau <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <p class="legal">En validant, vous acceptez que vos informations soient utilisées pour organiser cet appel, conformément à notre <a href="/politique-de-confidentialite">politique de confidentialité</a>.</p>
+        </form>
+      </div>
+
+      <div class="col" id="right">
+        <div class="cal" id="cal">
+          <div class="skel"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div></main>
+
+<footer><div class="wrap">
+  <span>© Botami Software</span>
+  <span><a href="/mentions-legales">Mentions légales</a> · <a href="/politique-de-confidentialite">Confidentialité</a> · <a href="/cgv">CGV</a></span>
+</div></footer>
+
+<script>
+(function () {
+  var API = "https://twyzzagqvbhnzzhjelpl.supabase.co/functions/v1/public-booking";
+  var SITE_DB = "https://tcrfjwtatwmoknvztwou.supabase.co/rest/v1/leads";
+  var SITE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjcmZqd3RhdHdtb2tudnp0d291Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDExMDYsImV4cCI6MjA5MDk3NzEwNn0.RLX-YXFH-QL-esx8uTf7KjaSOV84MZjwk56itm0BRcw";
+  var TZ = "Europe/Paris";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var fmt = function (o) { return new Intl.DateTimeFormat("fr-FR", Object.assign({ timeZone: TZ }, o)); };
+  var dayKey = fmt({ year: "numeric", month: "2-digit", day: "2-digit" });
+  var hourFmt = fmt({ hour: "2-digit", minute: "2-digit" });
+  var longFmt = fmt({ weekday: "long", day: "numeric", month: "long" });
+  var key = function (d) { var p = dayKey.formatToParts(d), o = {}; p.forEach(function (x) { o[x.type] = x.value; }); return o.year + "-" + o.month + "-" + o.day; };
+  var hour = function (iso) { return hourFmt.format(new Date(iso)).replace(":", "h"); };
+
+  var state = { unlocked: false, byDay: {}, days: [], month: null, day: null, slot: null, data: null };
+
+  // ---------- Formulaire ----------
+  var fields = ["name", "company", "phone", "email", "project"];
+  function validate() {
+    var bad = [];
+    fields.forEach(function (f) {
+      var el = $(f), v = el.value.trim(), ok = v.length > 0;
+      if (f === "email") ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      if (f === "phone") ok = v.replace(/[^\d]/g, "").length >= 9;
+      if (f === "project") ok = v.length >= 3;
+      el.setAttribute("aria-invalid", ok ? "false" : "true");
+      if (!ok) bad.push(el);
+    });
+    return bad;
+  }
+  fields.forEach(function (f) { $(f).addEventListener("input", function () { if (this.getAttribute("aria-invalid") === "true") validate(); }); });
+
+  $("f").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var bad = validate();
+    if (bad.length) {
+      $("ferr").hidden = false; $("ferr").textContent = "Merci de compléter les champs en rouge.";
+      bad[0].focus(); return;
+    }
+    $("ferr").hidden = true;
+    state.unlocked = true;
+    $("st1").classList.remove("on"); $("st2").classList.add("on");
+    render();
+    if (window.innerWidth < 860) $("right").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  // ---------- Créneaux ----------
+  window.__slots.then(function (d) {
+    if (!d || !d.ok) { $("cal").innerHTML = '<p class="msg">Impossible de charger les disponibilités. Écrivez-nous à <a href="mailto:contact@botami-agency.com">contact@botami-agency.com</a>.</p>'; return; }
+    d.slots.forEach(function (iso) { var k = key(new Date(iso)); (state.byDay[k] = state.byDay[k] || []).push(iso); });
+    state.days = Object.keys(state.byDay).sort();
+    if (!state.days.length) { $("cal").innerHTML = '<p class="msg">Aucun créneau libre pour le moment. Écrivez-nous à <a href="mailto:contact@botami-agency.com">contact@botami-agency.com</a>.</p>'; return; }
+    state.month = state.days[0].slice(0, 7);
+    render();
+  });
+
+  function monthsAvail() { var m = {}; state.days.forEach(function (d) { m[d.slice(0, 7)] = 1; }); return Object.keys(m).sort(); }
+
+  function render() {
+    if (!state.month) return;
+    var y = +state.month.slice(0, 4), m = +state.month.slice(5, 7);
+    var first = new Date(Date.UTC(y, m - 1, 1, 12));
+    var nDays = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    var lead = (first.getUTCDay() + 6) % 7; // semaine qui commence lundi
+    var months = monthsAvail(), mi = months.indexOf(state.month);
+    var today = key(new Date());
+    var title = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" }).format(first);
+
+    var h = '<div class="cal-head"><b>' + title + '</b><div class="nav">' +
+      '<button type="button" id="prev" aria-label="Mois précédent"' + (mi <= 0 ? " disabled" : "") + '>‹</button>' +
+      '<button type="button" id="next" aria-label="Mois suivant"' + (mi >= months.length - 1 ? " disabled" : "") + '>›</button></div></div>' +
+      '<div class="dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div class="days">';
+    for (var i = 0; i < lead; i++) h += "<i></i>";
+    for (var d = 1; d <= nDays; d++) {
+      var k = state.month + "-" + (d < 10 ? "0" : "") + d;
+      if (state.byDay[k]) h += '<button type="button" data-day="' + k + '" aria-pressed="' + (state.day === k) + '"' + (k === today ? ' class="today"' : "") + ">" + d + "</button>";
+      else h += "<i>" + d + "</i>";
+    }
+    h += "</div>";
+
+    if (state.day && state.byDay[state.day]) {
+      h += '<div class="times"><p>Créneaux du <b>' + longFmt.format(new Date(state.byDay[state.day][0])) + '</b></p><div class="tgrid">';
+      state.byDay[state.day].forEach(function (iso) { h += '<button type="button" data-slot="' + iso + '" aria-pressed="' + (state.slot === iso) + '">' + hour(iso) + "</button>"; });
+      h += "</div></div>";
+    }
+    if (state.slot) {
+      h += '<div class="confirm"><button class="btn" type="button" id="book">Confirmer le ' + longFmt.format(new Date(state.slot)) + " à " + hour(state.slot) + '</button><div class="err" id="berr" role="alert" hidden></div></div>';
+    }
+    h += '<p class="tz">Heures affichées à l\'heure de Paris.</p>';
+    if (!state.unlocked) h += '<div class="lock"><div>Remplissez le formulaire pour choisir votre créneau.</div></div>';
+    $("cal").innerHTML = h;
+  }
+
+  $("cal").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b || !state.unlocked) return;
+    var months = monthsAvail(), mi = months.indexOf(state.month);
+    if (b.id === "prev") { state.month = months[mi - 1]; render(); }
+    else if (b.id === "next") { state.month = months[mi + 1]; render(); }
+    else if (b.dataset.day) { state.day = b.dataset.day; state.slot = null; render(); }
+    else if (b.dataset.slot) { state.slot = b.dataset.slot; render(); var c = $("book"); if (c) c.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+    else if (b.id === "book") book(b);
+  });
+
+  // ---------- Réservation ----------
+  function book(btn) {
+    if (validate().length) { state.unlocked = false; render(); $("ferr").hidden = false; $("ferr").textContent = "Merci de compléter les champs en rouge."; return; }
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Réservation…';
+    var v = function (id) { return $(id).value.trim(); };
+    var payload = {
+      action: "book", start: state.slot, name: v("name"), company: v("company"), phone: v("phone"),
+      email: v("email"), project: v("project"), website: $("website").value,
+      source: location.href + (document.referrer ? " ← " + document.referrer : "")
+    };
+    fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+      .then(function (res) {
+        if (res.s === 200 && res.j.ok) return success(payload, res.j);
+        if (res.j && res.j.code === "slot_gone") {
+          var k = state.day; state.byDay[k] = (state.byDay[k] || []).filter(function (x) { return x !== state.slot; });
+          if (!state.byDay[k].length) { delete state.byDay[k]; state.days = state.days.filter(function (x) { return x !== k; }); state.day = null; }
+          state.slot = null; render();
+        }
+        showErr((res.j && res.j.error) || "La réservation n'a pas abouti. Réessayez.");
+      })
+      .catch(function () { showErr("Connexion impossible. Vérifiez votre réseau et réessayez."); });
+  }
+  function showErr(t) {
+    var b = $("book"); if (b) { b.disabled = false; b.textContent = "Réessayer"; }
+    var e = $("berr"); if (e) { e.hidden = false; e.textContent = t; } else alert(t);
+  }
+
+  function success(p, j) {
+    // Copie dans les leads du site (back-office /admin/leads) — sans bloquer.
+    try {
+      fetch(SITE_DB, { method: "POST", keepalive: true,
+        headers: { "Content-Type": "application/json", apikey: SITE_KEY, Authorization: "Bearer " + SITE_KEY, Prefer: "return=minimal" },
+        body: JSON.stringify({ first_name: p.name, email: p.email, phone: p.phone, company: p.company,
+          situation: "RDV réservé", message: "[RDV " + longFmt.format(new Date(j.start)) + " " + hour(j.start) + "] (" + p.company + ") — " + p.project,
+          source_route: location.pathname })
+      });
+    } catch (e) {}
+    try { window.gtag_report_rdv && window.gtag_report_rdv(); } catch (e) {}
+    try { window.dataLayer && window.dataLayer.push({ event: "rdv_booked" }); } catch (e) {}
+
+    $("st2").classList.remove("on");
+    $("card").innerHTML = '<div class="done"><div class="ok"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg></div>' +
+      "<h2>C'est réservé !</h2><p class=\"when\">" + longFmt.format(new Date(j.start)) + " · " + hour(j.start) + "</p>" +
+      "<p>L'invitation avec le lien Google Meet vient d'être envoyée à <b>" + p.email.replace(/</g, "&lt;") + "</b>. Elias et Théo ont hâte d'échanger avec vous.</p>" +
+      (j.meet_link ? '<p><a href="' + j.meet_link + '" target="_blank" rel="noopener">Lien de la visio</a></p>' : "") + "</div>";
+    $("card").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+})();
+</script>
+
+<!-- Mesure (chargée après le rendu, jamais bloquante) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-17963133191"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'AW-17963133191');
+gtag('config', 'G-TVPD38XZ7S');
+function gtag_report_rdv() {
+  gtag('event', 'conversion', { 'send_to': 'AW-17963133191/VBjHCJ3T7pgcEIfSvvVC', 'value': 1.0, 'currency': 'EUR' });
+}
+</script>
+</body>
+</html>
