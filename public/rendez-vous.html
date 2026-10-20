@@ -60,10 +60,10 @@ h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02
 .meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin:10px 0 18px;font-size:14px;color:var(--n700)}
 .meta span{display:inline-flex;align-items:center;gap:6px}
 .meta svg{width:16px;height:16px;color:var(--ambre-dark)}
-.who{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--n700);margin-bottom:20px}
+.who{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--n700);line-height:1.35;margin-bottom:18px}.who b{color:var(--ink);font-weight:600}
 .who .av{display:flex}
-.who .av img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--white);background:var(--n200)}
-.who .av img+img{margin-left:-10px}
+.who .av img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--white);background:var(--n200)}
+.who .av img+img{margin-left:-12px}
 form{display:grid;gap:12px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 label{display:block;font-size:13px;font-weight:500;color:var(--n700);margin-bottom:5px}
@@ -116,6 +116,23 @@ input[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--err)}
 footer{padding:20px 0;border-top:1px solid var(--n300);font-size:12px;color:var(--n500)}
 footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between}
 footer a{text-decoration:none}footer a:hover{color:var(--ink)}
+.pills{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.pills li{background:var(--white);border:1px solid var(--n300);border-radius:999px;padding:7px 14px;font-size:14px;color:var(--n700)}
+.pills b{color:var(--ink);font-weight:600}
+.gets{background:var(--cream);border:1px solid var(--n200);border-radius:12px;padding:14px 16px;margin-bottom:18px}
+.gets-t{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ambre-dark);margin-bottom:8px}
+.gets ul{list-style:none;display:grid;gap:6px}
+.gets li{position:relative;padding-left:22px;font-size:14px;line-height:1.45;color:var(--n700)}
+.gets li::before{content:"";position:absolute;left:3px;top:3px;width:5px;height:10px;border-right:2px solid var(--ambre);border-bottom:2px solid var(--ambre);transform:rotate(45deg)}
+.why{display:grid;grid-template-columns:repeat(3,1fr);margin-top:48px;border-top:1px solid var(--n300)}
+.why>div{padding:24px 24px 8px 0}
+.why>div+div{padding-left:24px;border-left:1px solid var(--n300)}
+.why .n{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ambre-dark)}
+.why h3{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:-.02em;margin:8px 0 6px}
+.why p{font-size:15px;line-height:1.6;color:var(--n700)}
+.quote{margin-top:40px;padding:28px 32px;background:var(--ink);color:var(--cream);border-radius:20px}
+.quote blockquote{font-family:var(--display);font-size:clamp(20px,2.6vw,28px);line-height:1.25;letter-spacing:-.02em}
+.quote figcaption{margin-top:12px;font-size:14px;color:#B9B4AC}
 @media (max-width:860px){
   .wrap{padding:0 16px}
   .grid{grid-template-columns:1fr}
@@ -123,6 +140,10 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
   .col+.col{border-left:0;border-top:1px solid var(--n300)}
   .row2{grid-template-columns:1fr}
   .steps{gap:16px;font-size:13px}
+  .why{grid-template-columns:1fr}
+  .why>div,.why>div+div{padding:20px 0 4px;border-left:0}
+  .why>div+div{border-top:1px solid var(--n300)}
+  .quote{padding:22px 20px}
 }
 </style>
 </head>
@@ -133,8 +154,13 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
 
 <main><div class="wrap">
   <div class="eyebrow">— Appel de découverte · 30 min · Visio</div>
-  <h1>Parlons de votre <i>application sur mesure.</i></h1>
-  <p class="lead">En 30 minutes, on analyse votre besoin, on vous dit ce qui est faisable, en combien de temps et pour quel budget. Sans engagement.</p>
+  <h1>Votre <i>application sur mesure,</i> chiffrée en 30 minutes.</h1>
+  <p class="lead">Tableurs partagés, logiciel qui ne colle plus à vos process, abonnements SaaS qui s'empilent ? Racontez-nous votre projet : vous repartez avec un délai, un budget et un plan d'action clairs. Sans engagement.</p>
+  <ul class="pills" aria-label="Nos engagements">
+    <li><b>4 à 8 semaines</b> de développement</li>
+    <li>Forfait dès <b>5&nbsp;000&nbsp;€&nbsp;HT</b></li>
+    <li><b>100&nbsp;%</b> du code vous appartient</li>
+  </ul>
 
   <section class="card" id="card">
     <div class="steps" aria-hidden="true"><span class="on" id="st1">Vos informations</span><span id="st2">Votre créneau</span></div>
@@ -146,8 +172,16 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>Google Meet</span>
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Gratuit, sans engagement</span>
         </div>
-        <div class="who"><span class="av"><img src="/rdv/elias.webp" alt="" width="32" height="32" loading="lazy"><img src="/rdv/theo.webp" alt="" width="32" height="32" loading="lazy"></span>Avec Elias &amp; Théo, cofondateurs</div>
+        <div class="who"><span class="av"><img src="data:image/webp;base64,UklGRvgEAABXRUJQVlA4IOwEAAAwGQCdASpgAGAAPk0gjkQioiGZWq0QKATEtIBqwXrfH8GXaL9mg7y6PwF4pZ2safZQS5Th/4rxqqqxeCN92xjUrtuR69XSR0E1xsEc8BrFYnAB32LZogymO4eeGeRfkg774lb/mPmOAWl7GlqrdZsTYb7N7uoutH9hdvgkGtK3YEVxKgepvOIwaC5Ssl7jBNy+mt+EFncrvkC6Tn1DNZknQZItt6+nUn2Z375CLvQtFeZ5km2sYnv/ev4wg35TpDNv47OpgvN0wp6uOpHKaFThcEAA/uZKeFa5zoH3FOf+hgPrPREmzFcfLROIa/IOeGseQ4nrtJawLonwCF5ruwWoHqGgUtz0UOC34g+/drrcoC38G529piEn2iv4ktGzsLs/Q++1q/nYNdIYaZgQYTJ6qHX6t335gf39efNJtUtrMUkICP15X9baR07nbMPsTb7ZLfnV5HDkLV8C7SuSlIPIaQS6nHAuySLdQfqEPF9KI6HWO93fivh1Bmwc4N23XswOE/Gns4sJDWxiJ5itkraeZFheh1WPyIpc7u294u87Vx+HigXhJyti5Z2Yj3zavOedI5MaVyvDfFpBx093EGNPNbGi7bi/ArX36gZtgPYIZmM2ZzwafYI+HwlwiNFQ1kLq2w/y2ZIrp0yo0h0W5YRavSy6fRd56HpQh10GeVZUUeDaHlBlfYZq74UNhNzNidbEKu5VC237Jgoi14/nXPYi8+34QQmaTI1FCMl/R9ZKF+PfMCkEJ52HoLtA73DBvKHgmpOVS/nY1O1u3aHbN03BGdJQ046r6N1qaZM1NXgkpRuCVCMnSXb223NqXN/Gf9+C9M7JvQ6DOB8AUZOeZda/v3lJArwXkjvz3UO2dn1w31gKnPCt2w5QrDFhuXbTIjd0os7PA4TZXso5f1vx6tKoM0h9vtee7lZx2sGk940n2VadaoM5r9f20BIl8fbEvKK/6lzlHQSfvlhlxTlGalH1UzsEC242jRr+jVO8jLHwd6GdGQ+l9QCRYBf1lsYWwZ0tyuiOKYF70RP+Z1DX4r/XCphF4xMw8Spn5LpY4hBeoKZ4pZWR7r53fP34JHgJdKip07ip/fbryUP8S9KrOfn0byrLS7ybEBNVSTXW5mOhVGPDcIFDKU0kb6lFM2RNcssrCjJhaNpBpam2OJvJFOeWEJNYYVYbdFaG92rZW2Asr5qNJ/DOJ26soxJ0MiBcgkmIk43Pwsg1VPIBAvsaLafroLu2uThdBUVR/+a0lzW8Fo6GOxoWh3/ezfwhwKZ/+Ugxw1YHL8jr4lh+ZAqKITnn7oUrN3RELW2ZZ03MRryg+B0AnZLGtlqUFqK9mezvJZRgVV72qSQPeJFqfi2iXONR/J02k/Zu5qcc4leMNDlxaOrgpABaUZ/GlTPn6alpcsfMjWo5RiyPyUGRP1OBuwcoVeRAFvyy0OAMGbzLoQOVitkzkhB5QwWZt+rjL9A95AgcvU5aI3kBBauQtTA4lVG81fefWwxbRa7VEbBvL+S+wrU1QO15TeN7QJHyymErPNny6OqnMQXS9MEb6B5QgvZYi0HzzdzId2T8kdNpsUQnD5CpxpNFKsS+UhgS9udJQ+uyHIJw0EB+TyH0tF+T9qrseU9apEjCR6C/v/Ocsdb9yvVL01dJdoEPfvssQajQpbIq7sIZ1EiOYc8gAAA=" alt="Elias" width="44" height="44"><img src="data:image/webp;base64,UklGRgoFAABXRUJQVlA4IP4EAABQGACdASpgAGAAPlEijkQjoiGXGwWYOAUEtIAJB30YfSbVfqL/J/vrGVQEnQawaab5VHzrLqSHnQf63KadSRmplcF05MumpoknSdEQTrbD1/VdBtp9SxqF2XQ5otyqYArABj1OiY/TLdYEPgs20q9gun5gq2J9LtlzlYbkxEoPy6490CzWxi3hggHHkhtNGV3g1fawYB1Am9upRx3H6pR9AFW8Je1o+wX/F6EB6g7SwwyHxuafQa4vA72QSRo67odsxOnncKqiTL00AAD+7mX5hkAi2T8W8j078dWWf0sTg7LGLw8K0044Tqp1EC5pzzq0T7HRCnZvNvB4/J+PeoDKGNYeUm62ulu7mrk0rTZR+tvy3l0hMp1NUnDHjG7RqJo2Q7ilF4dPqjkZUCsmm7JX3hcBe7IPbiM6txcOlAJnKwnt1rj1pjO7EZ0QNty2hCzvqpV2uSDcC75YHTE1ReF2LvxD1zh78olIMPLic/vy1A7QH6auCFp/JX8viA6c5xX2QelFtfzL819ifnFzr6uADErYN+yN8IDuG27ioAF4o67qz1XqLuwXLRh3VEOgKbZVbsnnnpPbk6vZXlLYaKaWhfshnolypRzXYwTWolo9nivNnwCzsqd4uTFc3F9FMtOmwk6JzwxYPQl/fLsE2V3dW0W+dFUakARY0dd3UZ9WnAtFci1egWfRiTHWw+hBu+t31YUn3nmzcFR/GKlLAYj58tBKSMcsyIhfTLxQ+US453aXmHw8OvCvhB9nz+ZoMXN24tIJB9bWyrdPoCRB3BfBdWXClaNVaus5N+obKIOltRp2GrX35eO5GaAas/8GT00Yb9CMIGynpzm9k1uuzfSi1Wx7k67Ba13zC25oT9nvXjjhj4aDlOatOWbJvvFw3NRfR3GDuQx8ie7NWWrt3E1plbV/xHC1n67s457ZJuSSM9h2MngajmahnEccQGZMiRnIpmYXuu66ZbjBKtLTOtcAwuL6TPm5S4LVr4pifYTgIEI00i7w61F4uyTV/GstwbodEgQRduJojmQYZtw5btLtIeABAuaRMaZRlcNE03SlPmpH/78G/IIoQOKHV0Cw21nVbEdk6WvQl4JPH7keoPu4xc0HWTMb4am2DN6o9kPFCvFU3LGmTb5/y5sm14ATbFCNCrmmOmp9mHgRL4y7gXhm2vpN6gvuwWyZheuzhaH/BtKjfbILta3BhSrGUPt/jKJvyDVwGdO3d3K/An0b38lvNl+vgis8+rEsGqi30PInL70Z4g1DtiegbutCCdSLMHcGe3MPclFFXlosiDa4KPRAl/ktetvwvUlsn7OAS7jWWfAWYh6ur9m8Y9kiVub/eMrs7exgkp27GXpYPQxGZeitfxIUmJUILVsJ4MvVBxWrDQMsK1ZkJt+Nto/f4aaRBMv/yhIo1sbWeGuKBUQM/9Q1ub935D2w9u1ucaNOGlvZxR6coNnY3pLyNCMmaCg5g6JKeT28DBJ6YFp7WBLRcjpTrlmBhU+7vhB1L2RVLeJAnKpPIxRAuy31XMeQfXgiWuOygLfNn4n9DkLVtjcGFcbGm3/bTVqYJkFLu3N9y3WOtWyNxomYZTAU6zZR0FnvRxLNS/G86vp56YqrvYQFWDYY0RfOVBC1uy9jw4udlfVMw5mcb7t47rZiBDM4BEkMydbtbXkt47mbjske8mC5nNG0q1knIzpfhHsTnnX2AAA=" alt="Théo" width="44" height="44"></span><span><b>Elias &amp; Théo</b><br>Cofondateurs de Botami Software</span></div>
 
+        <div class="gets">
+          <p class="gets-t">Pendant l'appel</p>
+          <ul>
+            <li>On analyse votre besoin et vos outils actuels</li>
+            <li>On vous dit ce qui est faisable, et ce qui ne l'est pas</li>
+            <li>Vous repartez avec une estimation de délai et de budget</li>
+          </ul>
+        </div>
         <form id="f" novalidate>
           <div class="row2">
             <div><label for="name">Nom <em>*</em></label><input id="name" name="name" autocomplete="name" required></div>
@@ -172,6 +206,29 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
       </div>
     </div>
   </section>
+
+  <section class="why" aria-label="Pourquoi Botami Software">
+    <div>
+      <span class="n">01</span>
+      <h3>Le prix d'après l'IA</h3>
+      <p>L'IA accélère la documentation, les tests et le code répétitif. Nous répercutons ce gain sur votre devis au lieu de le garder en marge.</p>
+    </div>
+    <div>
+      <span class="n">02</span>
+      <h3>Livré en 4 à 8 semaines</h3>
+      <p>Un cahier des charges technique offert, puis des livraisons régulières : vous voyez votre outil avancer chaque semaine.</p>
+    </div>
+    <div>
+      <span class="n">03</span>
+      <h3>Zéro dépendance</h3>
+      <p>Pas d'abonnement, pas de verrou. Le code source vous est transmis intégralement à la livraison.</p>
+    </div>
+  </section>
+
+  <figure class="quote">
+    <blockquote>« Une application qui coûtait 30&nbsp;000&nbsp;€ en agence traditionnelle démarre aujourd'hui à 5&nbsp;000&nbsp;€ chez Botami. »</blockquote>
+    <figcaption>Elias, cofondateur de Botami Software</figcaption>
+  </figure>
 </div></main>
 
 <footer><div class="wrap">
