@@ -379,6 +379,18 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
       });
     } catch (e) {}
     try { window.gtag_report_rdv && window.gtag_report_rdv(); } catch (e) {}
+    // Meta : correspondance avancée (le pixel hache email et téléphone) puis Lead + Schedule,
+    // avec un identifiant d'événement commun pour dédoublonner un futur envoi serveur.
+    try {
+      if (window.fbq) {
+        var ph = p.phone.replace(/[^\d+]/g, "").replace(/^\+/, "").replace(/^0/, "33");
+        var parts = p.name.trim().split(/\s+/);
+        fbq("init", "1650601729574589", { em: p.email.toLowerCase(), ph: ph, fn: (parts[0] || "").toLowerCase(), ln: (parts.slice(1).join(" ") || "").toLowerCase() });
+        var eid = "rdv-" + j.start + "-" + p.email.toLowerCase();
+        fbq("track", "Lead", { content_name: "Appel de découverte" }, { eventID: eid + "-lead" });
+        fbq("track", "Schedule", { content_name: "Appel de découverte" }, { eventID: eid + "-schedule" });
+      }
+    } catch (e) {}
     try { window.dataLayer && window.dataLayer.push({ event: "rdv_booked" }); } catch (e) {}
 
     $("st2").classList.remove("on");
@@ -392,6 +404,12 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
 </script>
 
 <!-- Mesure (chargée après le rendu, jamais bloquante) -->
+<script>
+!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1650601729574589');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1650601729574589&ev=PageView&noscript=1"></noscript>
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17963133191"></script>
 <script>
 window.dataLayer = window.dataLayer || [];
