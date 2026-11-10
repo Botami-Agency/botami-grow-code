@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { forwardLeadToCrm } from "@/lib/forwardLeadToCrm";
 
 const C = {
   bg: "#FAF7F2",
@@ -102,6 +103,16 @@ const LPFormCalendly = ({
       budget: form.depense || null,
       company_size: form.taille || null,
       source_route: sourceRoute,
+    });
+
+    forwardLeadToCrm({
+      name: form.prenom,
+      email: form.email,
+      phone: form.tel,
+      company: form.entreprise,
+      budget: form.depense,
+      company_size: form.taille,
+      source: sourceRoute,
     });
 
     // Send notification emails
