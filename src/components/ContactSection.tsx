@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { home, type SituationKey } from "@/content/home";
 import { BtnSubmit, SecNum } from "@/components/home/atoms";
 import { InfoRow, SituationChip } from "@/components/home/compounds";
+import { forwardLeadToCrm } from "@/lib/forwardLeadToCrm";
 
 const ContactSection = () => {
   const c = home.contact;
@@ -57,6 +58,16 @@ const ContactSection = () => {
       );
       return;
     }
+
+    forwardLeadToCrm({
+      name: form.prenom,
+      email: form.email,
+      phone: form.telephone,
+      company: form.entreprise,
+      message: form.message,
+      situation: situationLabel,
+      source: sourceRoute,
+    });
 
     // Notifs internes (best-effort, n'empêche pas le succès)
     const templateData = {
