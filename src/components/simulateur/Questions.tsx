@@ -268,6 +268,10 @@ export function Analyse({ p, maj, aller }: PropsQuestion) {
 /* ================= Q2 — Fiche entreprise ================= */
 export function Q2({ p, maj, aller }: PropsQuestion) {
   const reg = !p.ficheIgnoree ? p.lookup?.registre ?? null : null;
+  const site = p.lookup?.site ?? null;
+  // Sans fiche au registre, on montre ce que l'IA a lu sur le site, sous le nom saisi par le visiteur.
+  const ficheSite = !reg && !p.ficheIgnoree && !!(site?.activite || site?.secteur);
+  const trouve = !!reg || ficheSite;
   const actif = p.secteur.trim().length >= 2 && !!p.taille;
   const suivant = () => actif && aller("q3");
   const champs = reg
@@ -281,8 +285,8 @@ export function Q2({ p, maj, aller }: PropsQuestion) {
     : [];
 
   return (
-    <Question numero={2} precedent={() => aller("q1")} actif={actif} suivant={suivant} libelle={reg ? "C'est bien ça, je continue" : "Continuer"}>
-      {reg ? (
+    <Question numero={2} precedent={() => aller("q1")} actif={actif} suivant={suivant} libelle={trouve ? "C'est bien ça, je continue" : "Continuer"}>
+      {trouve ? (
         <TitreQuestion numero={2} avant="Voici " accent="ce qu'on a trouvé" apres=". C'est bien vous ?" sousTitre="Corrigez ce qui ne va pas : vos réponses priment pour la suite." />
       ) : (
         <TitreQuestion numero={2} avant="Parlez-nous de " accent="votre activité" sousTitre="Trois informations suffisent pour adapter la suite." />
@@ -317,6 +321,26 @@ export function Q2({ p, maj, aller }: PropsQuestion) {
               </button>
               <button type="button" className="underline underline-offset-4 text-ink hover:text-ambre-dark bo-focus rounded" onClick={() => maj({ ficheIgnoree: true })}>
                 Continuer sans cette fiche
+              </button>
+            </div>
+          </div>
+        )}
+
+        {ficheSite && (
+          <div className="rounded-band border border-n-300 bg-white p-6 animate-fade-up">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-display font-semibold text-[20px] text-ink">{p.nom.trim()}</p>
+                {site?.activite && <p className="mt-1 text-[14px] text-n-700">{site.activite}</p>}
+              </div>
+              <span className="flex-none rounded-full border border-n-300 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-n-500">
+                Lu sur votre site
+              </span>
+            </div>
+            <div className="mt-5 pt-4 border-t border-n-300 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+              <span className="text-n-500">Ce n'est pas votre entreprise ?</span>
+              <button type="button" className="underline underline-offset-4 text-ink hover:text-ambre-dark bo-focus rounded" onClick={() => aller("q1")}>
+                Modifier le nom
               </button>
             </div>
           </div>
