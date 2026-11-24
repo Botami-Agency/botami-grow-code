@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.generate-cdc]
 verify_jwt = false
+
+[functions.simulateur]
+verify_jwt = false
