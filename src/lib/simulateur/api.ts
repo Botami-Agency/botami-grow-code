@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { forwardLeadToCrm } from "@/lib/forwardLeadToCrm";
 import type { Resultat } from "./bareme";
 import { ASSISTANTS, BUDGETS, FREINS, IMPACTS, OUTILS, POLE_PAR_ID, STATUTS, TAILLES } from "./donnees";
-import type { Contact, Parcours, ResultatLookup } from "./parcours";
+import { registrePlausible, trouvaillesSite, type Contact, type LectureSite, type Parcours, type ResultatLookup } from "./parcours";
 
 export const ROUTE_SIMULATEUR = "/simulateur";
 
@@ -19,8 +19,18 @@ async function appeler<T>(body: Record<string, unknown>, delaiMs: number): Promi
   return Promise.race([appel, minuteur]);
 }
 
-export function rechercherEntreprise(nom: string, siteUrl: string | null) {
-  return appeler<ResultatLookup>({ action: "lookup", nom, siteUrl }, 20000);
+/** Registre public + lecture technique du site (logo, outils, villes). Rapide. */
+export function analyseRapide(nom: string, siteUrl: string | null) {
+  return appeler<Pick<ResultatLookup, "registre" | "candidats" | "technique" | "trace">>(
+    { action: "analyse-rapide", nom, siteUrl },
+    12000,
+  );
+}
+
+/** Lecture de 1 à 3 pages du site puis extraction par l'IA. Plus lent (quelques secondes). */
+export async function analyseContenu(siteUrl: string) {
+  const r = await appeler<{ site: LectureSite | null; trace: ResultatLookup["trace"] }>({ action: "analyse-contenu", siteUrl }, 28000);
+  return r?.site ?? null;
 }
 
 export async function verifierEmail(email: string): Promise<"ok" | "invalide" | "inconnu"> {
@@ -34,7 +44,7 @@ export async function verifierSite(url: string): Promise<"ok" | "injoignable" | 
 }
 
 export function nomEntreprise(p: Parcours) {
-  return (!p.ficheIgnoree && p.lookup?.registre?.nom) || p.nom.trim();
+  return (!p.ficheIgnoree && registrePlausible(p.lookup, p.nom)?.nom) || p.nom.trim();
 }
 
 const libelles = <T extends { id: string; label: string }>(liste: T[], ids: string[]) =>
@@ -58,6 +68,10 @@ export function resumeLead(p: Parcours, r: Resultat | null): string {
     );
   }
   if (p.siteUrl) lignes.push(`Site : ${p.siteUrl}`);
+  const t = trouvaillesSite(p.lookup);
+  if (t.services.length) lignes.push(`Services lus sur le site : ${t.services.join(", ")}`);
+  if (t.clientele) lignes.push(`Clientèle visée (site) : ${t.clientele}`);
+  if (t.outils.length) lignes.push(`Outils repérés sur le site : ${t.outils.map((o) => o.nom).join(", ")}`);
   return lignes.join("\n");
 }
 
@@ -78,7 +92,7 @@ export async function enregistrerLead(args: {
   const { lookup, ...reste } = p;
   const reponses = JSON.parse(
     JSON.stringify({
-      parcours: { ...reste, registre: lookup?.registre ?? null, site: lookup?.site ?? null },
+      parcours: { ...reste, registre: lookup?.registre ?? null, technique: lookup?.technique ?? null, site: lookup?.site ?? null },
       resultat,
       information_recontact_affichee: true,
     }),

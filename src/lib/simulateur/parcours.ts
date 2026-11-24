@@ -36,12 +36,36 @@ export interface FicheRegistre {
   secteur: string | null;
 }
 
+export interface OutilRepere {
+  nom: string;
+  categorie: string;
+}
+
+/** Lecture technique du site (sans IA) : logo, outils repérés dans le code, villes du balisage schema.org. */
+export interface LectureTechnique {
+  logo: string | null;
+  outils: OutilRepere[];
+  villes: string[];
+  titre: string | null;
+}
+
+/** Lecture du contenu du site par l'IA. Les champs ajoutés en V2 sont optionnels (parcours déjà en cours). */
 export interface LectureSite {
   activite: string | null;
   secteur: string | null;
   polesSuggeres: PoleId[];
   tachesParPole: Partial<Record<PoleId, string[]>>;
   postesSuggeres: string[];
+  services?: string[];
+  clientele?: string | null;
+  citation?: string | null;
+  villes?: string[];
+  pages?: { url: string; libelle: string }[];
+  outils?: OutilRepere[];
+  logo?: string | null;
+  source?: "firecrawl" | "html";
+  firecrawl?: string;
+  modele?: string;
 }
 
 export interface EtapeAnalyse {
@@ -54,8 +78,53 @@ export interface EtapeAnalyse {
 export interface ResultatLookup {
   registre: FicheRegistre | null;
   candidats: { nom: string; ville: string | null }[];
+  technique?: LectureTechnique | null;
   site: LectureSite | null;
   trace: EtapeAnalyse[];
+}
+
+const sansAccents = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const MOTS_GENERIQUES = new Set(["sarl", "sasu", "eurl", "societe", "entreprise", "groupe", "france", "services", "conseil", "agence"]);
+const motsSignificatifs = (s: string) => sansAccents(s).split(/[^a-z0-9]+/).filter((m) => m.length >= 4 && !MOTS_GENERIQUES.has(m));
+
+/**
+ * Fiche du registre à retenir. Une correspondance seulement « probable » est écartée quand le site
+ * la contredit : ses mots distinctifs (absents du nom saisi) n'apparaissent ni dans le titre du site
+ * ni dans l'activité lue. Évite d'afficher l'entreprise d'un homonyme à côté du logo du visiteur.
+ */
+export function registrePlausible(lookup: ResultatLookup | null, nomSaisi: string): FicheRegistre | null {
+  const reg = lookup?.registre ?? null;
+  if (!reg || reg.correspondance === "exacte") return reg;
+  const t = lookup?.technique ?? null;
+  const site = lookup?.site ?? null;
+  if (!t && !site) return reg;
+  const saisis = new Set(motsSignificatifs(nomSaisi));
+  const distinctifs = motsSignificatifs(reg.nom).filter((m) => !saisis.has(m));
+  if (!distinctifs.length) return reg;
+  const reference = sansAccents(`${t?.titre ?? ""} ${site?.activite ?? ""}`);
+  return distinctifs.some((m) => reference.includes(m)) ? reg : null;
+}
+
+/** Ce qu'on a trouvé sur le site, niveaux technique et contenu confondus. */
+export function trouvaillesSite(lookup: ResultatLookup | null) {
+  const t = lookup?.technique ?? null;
+  const s = lookup?.site ?? null;
+  const outils = [...(t?.outils ?? []), ...(s?.outils ?? [])].filter((o, i, l) => l.findIndex((x) => x.nom === o.nom) === i);
+  const villes = [...(s?.villes ?? []), ...(t?.villes ?? [])].filter(
+    (v, i, l) => l.findIndex((x) => x.toLowerCase() === v.toLowerCase()) === i,
+  );
+  // Le service d'icônes de Google n'est qu'un repli : un vrai logo trouvé ailleurs passe devant.
+  const logos = [t?.logo, s?.logo].filter((l): l is string => !!l);
+  return {
+    logo: logos.find((l) => !l.includes("google.com/s2/favicons")) ?? logos[0] ?? null,
+    activite: s?.activite ?? null,
+    services: s?.services ?? [],
+    clientele: s?.clientele ?? null,
+    citation: s?.citation ?? null,
+    villes: villes.slice(0, 4),
+    outils,
+    pages: s?.pages ?? [],
+  };
 }
 
 export interface Contact {
