@@ -33,6 +33,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import GestionIntervention from "./pages/GestionIntervention.tsx";
 import ServicePage from "./pages/ServicePage.tsx";
+import Simulateur from "./pages/Simulateur.tsx";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,8 @@ const App = () => (
           <Route path="/lp/google/logiciel-sur-mesure" element={<LandingGoogleLogicielSurMesure />} />
           <Route path="/etude-de-cas" element={<CaseStudy />} />
           <Route path="/gestion-intervention" element={<GestionIntervention />} />
+          <Route path="/simulateur" element={<Simulateur />} />
+          <Route path="/simulateur/merci" element={<Simulateur />} />
           <Route path="/applications-web-sur-mesure" element={<ServicePage slug="applications-web-sur-mesure" />} />
           <Route path="/applications-mobiles" element={<ServicePage slug="applications-mobiles" />} />
           <Route path="/refonte-outils-internes" element={<ServicePage slug="refonte-outils-internes" />} />
