@@ -1,20 +1,18 @@
 // Fonction serveur du simulateur IA (/simulateur).
-// Actions : "lookup" (registre public + lecture du site par IA), "verifier-email",
-// "verifier-site", "envoyer-resultat" (e-mail du résultat au prospect).
+// Actions :
+//   "analyse-rapide"  registre public + lecture technique du site (logo, outils, villes), moins de 2 s ;
+//   "analyse-contenu" lecture de 1 à 3 pages (Firecrawl si relié) puis extraction par IA ;
+//   "lookup"          les deux à la fois (compatibilité avec la première version de la page) ;
+//   "verifier-email", "verifier-site", "envoyer-resultat" (e-mail du résultat au prospect).
 // Le lead lui-même est enregistré côté navigateur dans la table leads (comme les autres formulaires).
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { avecDelai, lectureContenu, lectureTechnique } from "./lecture-site.ts";
 
 const BOOKING_URL = "https://calendly.com/elias-botami-agency/30min";
 const EMAIL_FROM = "Botami <contact@botami-agency.com>";
-// Le premier modèle qui répond est utilisé. Le second est celui déjà utilisé par generate-cdc.
-const MODELES = ["google/gemini-2.5-flash", "openai/gpt-5.5"];
-const DELAI_IA_MS = 12000;
-
-const POLES = [
-  "commercial", "finance", "administratif", "rh", "comptabilite", "reporting", "production",
-  "service_client", "marketing", "logistique", "achats", "juridique", "management", "pilotage",
-];
+// Garde-fou de coût : au-delà, l'analyse du contenu se fait sans Firecrawl pour cette adresse IP.
+const LIMITE_ANALYSES = { max: 12, fenetreMs: 10 * 60 * 1000 };
 
 type Json = Record<string, unknown>;
 type EtapeTrace = { id: string; label: string; status: "ok" | "vide" | "erreur"; ms: number };
@@ -39,16 +37,6 @@ const json = (data: unknown, status = 200) =>
   });
 
 const texte = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
-
-async function avecDelai<T>(ms: number, travail: (signal: AbortSignal) => Promise<T>): Promise<T> {
-  const ctrl = new AbortController();
-  const minuteur = setTimeout(() => ctrl.abort(), ms);
-  try {
-    return await travail(ctrl.signal);
-  } finally {
-    clearTimeout(minuteur);
-  }
-}
 
 /* ---------- DNS (DNS-over-HTTPS, sans accès réseau interne) ---------- */
 async function resoudre(nom: string, type: "MX" | "A"): Promise<"ok" | "absent" | "inexistant"> {
@@ -175,99 +163,6 @@ async function chercherRegistre(nom: string) {
   };
 }
 
-/* ---------- Lecture du site par IA ---------- */
-function extraireTexte(html: string): string {
-  const titre = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "";
-  // Les sites en JavaScript (React, Vue…) n'ont souvent que leurs balises meta : on les lit toutes,
-  // quel que soit l'ordre des attributs.
-  const metas = [...html.matchAll(/<meta\b[^>]*>/gi)].map((m) => m[0]);
-  const meta = (cle: string) => {
-    const balise = metas.find((b) => new RegExp(`(?:name|property)=["']${cle}["']`, "i").test(b));
-    return balise?.match(/content=(["'])([\s\S]*?)\1/i)?.[2] ?? "";
-  };
-  const desc = [meta("description"), meta("og:description"), meta("og:site_name")]
-    .filter((v, i, t) => v && t.indexOf(v) === i)
-    .join(" — ");
-  const corps = html
-    .replace(/<(script|style|noscript|svg|iframe)[\s\S]*?<\/\1>/gi, " ")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&#39;|&rsquo;/g, "'")
-    .replace(/\s+/g, " ");
-  return `Titre : ${titre}\nDescription : ${desc}\nContenu : ${corps}`.slice(0, 6000);
-}
-
-const CONSIGNE_SITE = `Tu analyses le site d'une entreprise française pour personnaliser un questionnaire.
-Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour, de la forme :
-{"activite":"une phrase de 15 mots maximum","secteur":"2 à 4 mots","polesSuggeres":["..."],"tachesParPole":{"<pole>":["...","...","..."]},"postesSuggeres":["..."]}
-Règles :
-- polesSuggeres : 4 à 6 identifiants parmi ${POLES.join(", ")}, du plus au moins chronophage pour ce métier.
-- tachesParPole : pour les 4 premiers pôles suggérés, 3 tâches répétitives propres à ce métier, 8 mots maximum chacune, à l'infinitif.
-- postesSuggeres : 3 ou 4 intitulés de postes typiques de cette entreprise.
-- Si le contenu est vide ou illisible, renvoie {}.`;
-
-async function lireSite(url: URL) {
-  const html = await avecDelai(6000, async (signal) => {
-    const res = await fetch(url.toString(), {
-      signal,
-      redirect: "follow",
-      headers: { "user-agent": "Mozilla/5.0 (compatible; BotamiSimulateur/1.0)" },
-    });
-    if (!res.ok) throw new Error(`site ${res.status}`);
-    return (await res.text()).slice(0, 400_000);
-  });
-  const contenu = extraireTexte(html);
-
-  const cle = Deno.env.get("LOVABLE_API_KEY");
-  if (!cle) throw new Error("LOVABLE_API_KEY manquant");
-
-  for (const modele of MODELES) {
-    try {
-      const reponse = await avecDelai(DELAI_IA_MS, (signal) =>
-        fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          signal,
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${cle}` },
-          body: JSON.stringify({
-            model: modele,
-            messages: [
-              { role: "system", content: CONSIGNE_SITE },
-              { role: "user", content: contenu },
-            ],
-          }),
-        }),
-      );
-      if (!reponse.ok) continue;
-      const data = await reponse.json();
-      const brut: string = data?.choices?.[0]?.message?.content ?? "";
-      const objet = JSON.parse(brut.slice(brut.indexOf("{"), brut.lastIndexOf("}") + 1));
-      return assainirSite(objet);
-    } catch {
-      continue;
-    }
-  }
-  throw new Error("lecture IA impossible");
-}
-
-function assainirSite(o: Json) {
-  const liste = (v: unknown, n: number, max: number) =>
-    Array.isArray(v) ? v.filter((x) => typeof x === "string").map((x) => x.slice(0, max)).slice(0, n) : [];
-  const poles = liste(o?.polesSuggeres, 6, 30).filter((p) => POLES.includes(p));
-  const taches: Record<string, string[]> = {};
-  for (const p of POLES) {
-    const t = liste((o?.tachesParPole as Json | undefined)?.[p], 3, 70);
-    if (t.length) taches[p] = t;
-  }
-  return {
-    activite: texte(o?.activite, 140) || null,
-    secteur: texte(o?.secteur, 60) || null,
-    polesSuggeres: poles,
-    tachesParPole: taches,
-    postesSuggeres: liste(o?.postesSuggeres, 4, 50),
-  };
-}
-
 async function chronometrer<T>(trace: EtapeTrace[], id: string, label: string, travail: () => Promise<T>) {
   const debut = Date.now();
   try {
@@ -279,6 +174,22 @@ async function chronometrer<T>(trace: EtapeTrace[], id: string, label: string, t
     trace.push({ id, label, status: "erreur", ms: Date.now() - debut });
     return null;
   }
+}
+
+/* ---------- Garde-fou de coût (mémoire de l'instance, approximatif mais suffisant) ---------- */
+const analysesParIp = new Map<string, number[]>();
+
+function adresseIp(req: Request) {
+  return (req.headers.get("x-forwarded-for") ?? req.headers.get("cf-connecting-ip") ?? "inconnue").split(",")[0].trim();
+}
+
+function tropDAnalyses(ip: string) {
+  const maintenant = Date.now();
+  const recentes = (analysesParIp.get(ip) ?? []).filter((t) => maintenant - t < LIMITE_ANALYSES.fenetreMs);
+  recentes.push(maintenant);
+  analysesParIp.set(ip, recentes);
+  if (analysesParIp.size > 5000) analysesParIp.clear();
+  return recentes.length > LIMITE_ANALYSES.max;
 }
 
 /* ---------- E-mail du résultat ---------- */
@@ -358,21 +269,33 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as Json;
     const action = String(body?.action ?? "");
 
-    if (action === "lookup") {
+    if (action === "analyse-rapide" || action === "analyse-contenu" || action === "lookup") {
       const nom = texte(body?.nom, 120);
-      if (nom.length < 2) return json({ error: "nom requis" }, 400);
       const url = nettoyerUrl(texte(body?.siteUrl, 300));
+      const avecRegistre = action !== "analyse-contenu";
+      const avecContenu = action !== "analyse-rapide";
+      if (avecRegistre && nom.length < 2) return json({ error: "nom requis" }, 400);
+      const rapide = avecContenu && !!url && tropDAnalyses(adresseIp(req));
       const trace: EtapeTrace[] = [];
-      const [reg, site] = await Promise.all([
-        chronometrer(trace, "registre", "Recherche dans le registre des entreprises", () => chercherRegistre(nom)),
-        url
-          ? chronometrer(trace, "site", "Lecture de votre site par l'IA", () => lireSite(url))
-          : Promise.resolve(null),
+
+      const [reg, technique, site] = await Promise.all([
+        avecRegistre
+          ? chronometrer(trace, "registre", "Recherche dans le registre des entreprises", () => chercherRegistre(nom))
+          : null,
+        avecRegistre && url
+          ? chronometrer(trace, "technique", "Lecture technique du site", async () => {
+              const t = await lectureTechnique(url);
+              return { logo: t.logo, outils: t.outils, villes: t.villes, titre: t.titre };
+            })
+          : null,
+        avecContenu && url
+          ? chronometrer(trace, "contenu", "Lecture des pages et analyse par l'IA", () => lectureContenu(url, { rapide }))
+          : null,
       ]);
+
       return json({
-        registre: reg?.registre ?? null,
-        candidats: reg?.candidats ?? [],
-        site,
+        ...(avecRegistre ? { registre: reg?.registre ?? null, candidats: reg?.candidats ?? [], technique } : {}),
+        ...(avecContenu ? { site } : {}),
         trace,
       });
     }

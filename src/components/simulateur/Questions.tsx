@@ -23,11 +23,12 @@ import {
   type OutilId,
   type PoleId,
 } from "@/lib/simulateur/donnees";
-import { rechercherEntreprise, verifierSite } from "@/lib/simulateur/api";
-import type { EcranId, Parcours } from "@/lib/simulateur/parcours";
+import { analyseContenu, analyseRapide, verifierSite } from "@/lib/simulateur/api";
+import { registrePlausible, trouvaillesSite, type EcranId, type LectureSite, type Parcours, type ResultatLookup } from "@/lib/simulateur/parcours";
 import { ArrowRightIcon } from "@/components/home/atoms";
 import { cn } from "@/lib/utils";
 import { BoutonAction, Champ, Coquille, Libelle, TitreQuestion, Tuile, ZoneTexte, useRaccourcis } from "./ui";
+import { FicheEntreprise, LogoEntreprise } from "./Fiche";
 
 export interface PropsQuestion {
   p: Parcours;
@@ -166,67 +167,116 @@ export function Q1({ p, maj, aller }: PropsQuestion) {
 }
 
 /* ================= Analyse ================= */
+type IdEtape = "registre" | "technique" | "pages" | "ia";
+type AnalyseRapide = Pick<ResultatLookup, "registre" | "candidats" | "technique" | "trace">;
+const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+
 export function Analyse({ p, maj, aller }: PropsQuestion) {
   const avecSite = !!p.aSite && !!p.siteUrl.trim();
-  const etapes = useMemo(
+  const etapes = useMemo<{ id: IdEtape; label: string }[]>(
     () => [
-      "Recherche dans le registre des entreprises",
-      "Lecture de la fiche officielle",
-      ...(avecSite ? ["Lecture de votre site", "Analyse de votre métier par l'IA"] : []),
+      { id: "registre", label: "Recherche dans le registre des entreprises" },
+      ...(avecSite
+        ? ([
+            { id: "technique", label: "Lecture technique de votre site" },
+            { id: "pages", label: "Lecture de vos pages" },
+            { id: "ia", label: "Analyse de votre métier par l'IA" },
+          ] as const)
+        : []),
     ],
     [avecSite],
   );
+
+  // undefined : réponse attendue ; null : rien trouvé, ou serveur indisponible.
+  const [rapide, setRapide] = useState<AnalyseRapide | null | undefined>(undefined);
+  const [contenu, setContenu] = useState<LectureSite | null | undefined>(avecSite ? undefined : null);
   const [faites, setFaites] = useState(0);
   const lance = useRef(false);
+  const fini = useRef(false);
 
   useEffect(() => {
     if (lance.current) return;
     lance.current = true;
-    let reponseRecue = !!p.lookup;
-    let fini = false;
-    const debut = Date.now();
-
-    const tic = setInterval(() => {
-      setFaites((n) => {
-        // La dernière étape attend la réponse du serveur.
-        if (n >= etapes.length - 1 && !reponseRecue) return n;
-        return Math.min(n + 1, etapes.length);
-      });
-    }, 750);
-
-    const terminer = (lookup: Parcours["lookup"]) => {
-      if (fini) return;
-      fini = true;
-      const attente = Math.max(0, 750 * (etapes.length + 1) - (Date.now() - debut));
-      setTimeout(() => {
-        clearInterval(tic);
-        setFaites(etapes.length);
-        maj((q) => {
-          const reg = lookup?.registre;
-          const effectif = q.effectif ?? reg?.effectif ?? null;
-          return {
-            lookup,
-            secteur: q.secteur || lookup?.site?.secteur || reg?.secteur || "",
-            effectif,
-            taille: q.taille ?? tailleDepuisEffectif(effectif),
-          };
-        });
-        setTimeout(() => aller("q2"), 450);
-      }, attente);
-    };
-
     if (p.lookup) {
-      reponseRecue = true;
-      terminer(p.lookup);
-    } else {
-      rechercherEntreprise(p.nom.trim(), avecSite ? p.siteUrl.trim() : null).then((r) => {
-        reponseRecue = true;
-        terminer(r ?? { registre: null, candidats: [], site: null, trace: [] });
-      });
+      // Retour en arrière sans changement : on rejoue l'analyse déjà faite.
+      setRapide({ registre: p.lookup.registre, candidats: p.lookup.candidats, technique: p.lookup.technique ?? null, trace: p.lookup.trace });
+      setContenu(p.lookup.site ?? null);
+      return;
     }
-    return () => clearInterval(tic);
+    const site = avecSite ? p.siteUrl.trim() : null;
+    analyseRapide(p.nom.trim(), site).then((r) => setRapide(r ?? null));
+    if (site) analyseContenu(site).then((c) => setContenu(c));
+    // Filet de sécurité : au-delà de 30 s, on continue avec ce qu'on a.
+    setTimeout(() => {
+      setRapide((v) => (v === undefined ? null : v));
+      setContenu((v) => (v === undefined ? null : v));
+    }, 30000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Une étape se valide dès que sa réponse est arrivée, au rythme d'une étape toutes les 800 ms au plus.
+  useEffect(() => {
+    if (faites >= etapes.length) return;
+    const id = etapes[faites].id;
+    const pret = id === "registre" || id === "technique" ? rapide !== undefined : contenu !== undefined;
+    if (!pret) return;
+    const t = setTimeout(() => setFaites((n) => n + 1), faites === 0 ? 900 : 800);
+    return () => clearTimeout(t);
+  }, [faites, rapide, contenu, etapes]);
+
+  // Tout est affiché : on laisse le temps de lire, puis question 2.
+  useEffect(() => {
+    if (faites < etapes.length || fini.current) return;
+    fini.current = true;
+    const lookup: ResultatLookup = {
+      registre: rapide?.registre ?? null,
+      candidats: rapide?.candidats ?? [],
+      technique: avecSite ? rapide?.technique ?? null : null,
+      site: avecSite ? contenu ?? null : null,
+      trace: rapide?.trace ?? [],
+    };
+    setTimeout(() => {
+      maj((q) => {
+        const reg = registrePlausible(lookup, q.nom);
+        const effectif = q.effectif ?? reg?.effectif ?? null;
+        return {
+          lookup,
+          secteur: q.secteur || lookup.site?.secteur || reg?.secteur || "",
+          effectif,
+          taille: q.taille ?? tailleDepuisEffectif(effectif),
+        };
+      });
+      aller("q2");
+    }, 1800);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [faites]);
+
+  const tech = rapide?.technique ?? null;
+  const reg = rapide ? registrePlausible({ ...rapide, site: contenu ?? null }, p.nom) : null;
+  const resultat = (id: IdEtape): { texte: string; trouve: boolean; logo?: string | null } => {
+    if (id === "registre") {
+      if (!reg) return { texte: avecSite ? "Aucune fiche à ce nom : on s'appuie sur votre site" : "Aucune fiche à ce nom", trouve: false };
+      return { texte: [reg.nom, reg.forme, reg.anneeCreation && `créée en ${reg.anneeCreation}`, reg.ville].filter(Boolean).join(" · "), trouve: true };
+    }
+    if (id === "technique") {
+      if (!tech) return { texte: "Site injoignable pour l'instant, on continue", trouve: false };
+      const morceaux = [
+        tech.logo && "Logo trouvé",
+        tech.outils.length && `${pluriel(tech.outils.length, "outil")} : ${tech.outils.slice(0, 3).map((o) => o.nom).join(", ")}${tech.outils.length > 3 ? "…" : ""}`,
+        tech.villes.length && `présence à ${tech.villes.join(", ")}`,
+      ].filter(Boolean);
+      return { texte: morceaux.length ? morceaux.join(" · ") : "Rien de particulier dans le code de la page", trouve: morceaux.length > 0, logo: tech.logo };
+    }
+    if (id === "pages") {
+      const pages = contenu?.pages ?? [];
+      if (!pages.length) return { texte: "Pages illisibles pour l'instant, on continue", trouve: false };
+      return { texte: `${pluriel(pages.length, "page")} lue${pages.length > 1 ? "s" : ""} : ${pages.map((x) => x.libelle).join(", ")}`, trouve: true };
+    }
+    const services = contenu?.services ?? [];
+    if (services.length) return { texte: `${pluriel(services.length, "service")} repéré${services.length > 1 ? "s" : ""} : ${services.slice(0, 3).join(", ")}${services.length > 3 ? "…" : ""}`, trouve: true };
+    if (contenu?.activite) return { texte: contenu.activite, trouve: true };
+    return { texte: "Analyse indisponible pour l'instant, on continue", trouve: false };
+  };
 
   return (
     <Coquille>
@@ -234,29 +284,42 @@ export function Analyse({ p, maj, aller }: PropsQuestion) {
         surtitre="Analyse en cours"
         avant="On rassemble ce qui existe déjà sur "
         accent={p.nom.trim()}
-        sousTitre="Notre IA lit les données publiques et votre site. Comptez quelques secondes."
+        sousTitre={avecSite ? "Notre IA consulte le registre public et lit votre site. Comptez une dizaine de secondes." : "On consulte le registre public des entreprises."}
       />
       <ul className="mt-9 max-w-xl space-y-3" aria-live="polite">
-        {etapes.map((label, i) => {
+        {etapes.map(({ id, label }, i) => {
           const etat = i < faites ? "fait" : i === faites ? "en_cours" : "attente";
+          const r = etat === "fait" ? resultat(id) : null;
           return (
             <li
-              key={label}
+              key={id}
               className={cn(
-                "flex items-center gap-3 rounded-card border bg-white px-5 py-4 text-[15px] transition-all duration-500",
+                "flex items-start gap-3 rounded-card border bg-white px-5 py-4 text-[15px] transition-all duration-500",
                 etat === "attente" ? "border-n-300/60 opacity-40" : "border-n-300",
               )}
             >
-              <span className="grid place-items-center w-6 h-6">
+              <span className="grid place-items-center w-6 h-6 flex-none">
                 {etat === "fait" ? (
-                  <span className="grid place-items-center w-5 h-5 rounded-full bg-ambre text-white">
-                    <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
-                  </span>
+                  r?.trouve ? (
+                    <span className="grid place-items-center w-5 h-5 rounded-full bg-ambre text-white">
+                      <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
+                    </span>
+                  ) : (
+                    <CircleMinus className="w-5 h-5 text-n-500" aria-hidden />
+                  )
                 ) : (
                   <LoaderCircle className={cn("w-5 h-5 text-ambre", etat === "en_cours" && "animate-spin")} aria-hidden />
                 )}
               </span>
-              <span className={etat === "fait" ? "text-ink" : "text-n-700"}>{label}</span>
+              <span className="min-w-0">
+                <span className={cn("block", etat === "fait" ? "text-ink" : "text-n-700")}>{label}</span>
+                {r && (
+                  <span className="mt-1 flex items-center gap-2 text-[13px] text-n-500 animate-fade-up">
+                    {r.logo && <LogoEntreprise src={r.logo} nom={p.nom} taille="petit" />}
+                    <span className="min-w-0">{r.texte}</span>
+                  </span>
+                )}
+              </span>
             </li>
           );
         })}
@@ -267,22 +330,12 @@ export function Analyse({ p, maj, aller }: PropsQuestion) {
 
 /* ================= Q2 — Fiche entreprise ================= */
 export function Q2({ p, maj, aller }: PropsQuestion) {
-  const reg = !p.ficheIgnoree ? p.lookup?.registre ?? null : null;
-  const site = p.lookup?.site ?? null;
-  // Sans fiche au registre, on montre ce que l'IA a lu sur le site, sous le nom saisi par le visiteur.
-  const ficheSite = !reg && !p.ficheIgnoree && !!(site?.activite || site?.secteur);
-  const trouve = !!reg || ficheSite;
+  const reg = !p.ficheIgnoree ? registrePlausible(p.lookup, p.nom) : null;
+  const t = trouvaillesSite(p.lookup);
+  const aDuSite = !!(t.activite || t.services.length || t.outils.length || t.citation || t.villes.length || t.logo);
+  const trouve = !!reg || aDuSite;
   const actif = p.secteur.trim().length >= 2 && !!p.taille;
   const suivant = () => actif && aller("q3");
-  const champs = reg
-    ? ([
-        ["Forme", reg.forme],
-        ["Créée en", reg.anneeCreation],
-        ["Effectif", reg.tranche],
-        ["Ville", reg.ville],
-        ["Dirigeant", reg.dirigeant],
-      ].filter(([, v]) => v) as [string, string][])
-    : [];
 
   return (
     <Question numero={2} precedent={() => aller("q1")} actif={actif} suivant={suivant} libelle={trouve ? "C'est bien ça, je continue" : "Continuer"}>
@@ -293,57 +346,15 @@ export function Q2({ p, maj, aller }: PropsQuestion) {
       )}
 
       <div className="mt-8 max-w-3xl space-y-7">
-        {reg && (
-          <div className="rounded-band border border-n-300 bg-white p-6 animate-fade-up">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-display font-semibold text-[20px] text-ink">{reg.nom}</p>
-                {p.lookup?.site?.activite && <p className="mt-1 text-[14px] text-n-700">{p.lookup.site.activite}</p>}
-              </div>
-              <span className="flex-none rounded-full border border-n-300 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-n-500">
-                Registre public
-              </span>
-            </div>
-            {champs.length > 0 && (
-              <dl className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
-                {champs.map(([k, v]) => (
-                  <div key={k}>
-                    <dt className="font-mono text-[10px] uppercase tracking-[0.16em] text-n-500">{k}</dt>
-                    <dd className="mt-1 text-[15px] font-medium text-ink">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-            <div className="mt-5 pt-4 border-t border-n-300 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
-              <span className="text-n-500">{reg.correspondance === "probable" ? "Plusieurs entreprises portent un nom proche." : "Ce n'est pas votre entreprise ?"}</span>
-              <button type="button" className="underline underline-offset-4 text-ink hover:text-ambre-dark bo-focus rounded" onClick={() => aller("q1")}>
-                Modifier le nom
-              </button>
-              <button type="button" className="underline underline-offset-4 text-ink hover:text-ambre-dark bo-focus rounded" onClick={() => maj({ ficheIgnoree: true })}>
-                Continuer sans cette fiche
-              </button>
-            </div>
-          </div>
-        )}
-
-        {ficheSite && (
-          <div className="rounded-band border border-n-300 bg-white p-6 animate-fade-up">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-display font-semibold text-[20px] text-ink">{p.nom.trim()}</p>
-                {site?.activite && <p className="mt-1 text-[14px] text-n-700">{site.activite}</p>}
-              </div>
-              <span className="flex-none rounded-full border border-n-300 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-n-500">
-                Lu sur votre site
-              </span>
-            </div>
-            <div className="mt-5 pt-4 border-t border-n-300 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
-              <span className="text-n-500">Ce n'est pas votre entreprise ?</span>
-              <button type="button" className="underline underline-offset-4 text-ink hover:text-ambre-dark bo-focus rounded" onClick={() => aller("q1")}>
-                Modifier le nom
-              </button>
-            </div>
-          </div>
+        {trouve && (
+          <FicheEntreprise
+            nom={reg?.nom ?? p.nom.trim()}
+            registre={reg}
+            trouvailles={t}
+            aDuSite={aDuSite}
+            onModifierNom={() => aller("q1")}
+            onIgnorerRegistre={() => maj({ ficheIgnoree: true })}
+          />
         )}
 
         <div className="grid sm:grid-cols-[1fr_200px] gap-4">
