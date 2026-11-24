@@ -178,8 +178,16 @@ async function chercherRegistre(nom: string) {
 /* ---------- Lecture du site par IA ---------- */
 function extraireTexte(html: string): string {
   const titre = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "";
-  const desc =
-    html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)?.[1] ?? "";
+  // Les sites en JavaScript (React, Vue…) n'ont souvent que leurs balises meta : on les lit toutes,
+  // quel que soit l'ordre des attributs.
+  const metas = [...html.matchAll(/<meta\b[^>]*>/gi)].map((m) => m[0]);
+  const meta = (cle: string) => {
+    const balise = metas.find((b) => new RegExp(`(?:name|property)=["']${cle}["']`, "i").test(b));
+    return balise?.match(/content=(["'])([\s\S]*?)\1/i)?.[2] ?? "";
+  };
+  const desc = [meta("description"), meta("og:description"), meta("og:site_name")]
+    .filter((v, i, t) => v && t.indexOf(v) === i)
+    .join(" — ");
   const corps = html
     .replace(/<(script|style|noscript|svg|iframe)[\s\S]*?<\/\1>/gi, " ")
     .replace(/<[^>]+>/g, " ")
