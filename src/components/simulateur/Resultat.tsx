@@ -8,6 +8,7 @@ import { calculerResultat, COUT_EMPLOYEUR_MENSUEL, type Resultat as R } from "@/
 import { FREINS, HEURES_PAR_MOIS, POLE_PAR_ID } from "@/lib/simulateur/donnees";
 import { conversionLead, enregistrerLead, envoyerResultatParEmail, nomEntreprise, suivreEvenement } from "@/lib/simulateur/api";
 import type { Contact, Parcours } from "@/lib/simulateur/parcours";
+import { detailParPole } from "@/lib/simulateur/detail";
 import { ArrowRightIcon, Brand } from "@/components/home/atoms";
 import { cn } from "@/lib/utils";
 import theo from "@/assets/theo.webp";
@@ -104,8 +105,8 @@ function FeuilleDeRoute({ p }: { p: Parcours }) {
 
 /* ---------- Contenu du résultat ---------- */
 function Contenu({ p, r, onPartager }: { p: Parcours; r: R; onPartager: () => void }) {
-  const n = p.taches.length;
-  const exemples = p.taches.slice(0, 2).map((t) => `«\u00a0${t.charAt(0).toLowerCase()}${t.slice(1)}\u00a0»`);
+  const detail = detailParPole(p, r);
+  const minuscule = (t: string) => t.charAt(0).toLowerCase() + t.slice(1);
   const frein = FREINS.find((f) => f.id === p.freins[0]);
   const entreprise = nomEntreprise(p);
   const rdv = lienRdv(p);
@@ -118,17 +119,21 @@ function Contenu({ p, r, onPartager }: { p: Parcours; r: R; onPartager: () => vo
         {entreprise ? ` chez ${entreprise}` : ""}
       </h1>
       <div className="mt-5 max-w-3xl space-y-3 text-[16px] sm:text-[17px] leading-[1.6] text-n-700">
-        {n > 0 ? (
-          <p>
-            On a repéré {n === 1 ? "une tâche répétitive" : `${n} tâches répétitives`}
-            {exemples.length ? `, comme ${exemples.join(" et ")}` : ""}. {n === 1 ? "Elle revient" : "Elles reviennent"} chaque semaine. Ce sont exactement le genre de tâches qu'un outil sur mesure prend en charge.
-          </p>
-        ) : (
-          <p>Les tâches que vous avez décrites reviennent chaque semaine. Ce sont exactement le genre de tâches qu'un outil sur mesure prend en charge.</p>
-        )}
+        <p>Les heures récupérables viennent des tâches que vous avez cochées :</p>
+        <ul className="space-y-2.5">
+          {detail.map((d) => (
+            <li key={d.pole} className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
+              <span className="whitespace-nowrap font-medium text-ink">
+                {d.label} · {`≈\u00a0${d.heures}\u00a0h`} par mois
+              </span>
+              <span>{d.taches.length ? d.taches.map(minuscule).join(", ") : "aucune tâche cochée : estimation moyenne du pôle"}</span>
+            </li>
+          ))}
+        </ul>
+        {p.tachesLibre.trim() && <p>{`Et ce que vous avez ajouté : «\u00a0${p.tachesLibre.trim()}\u00a0».`}</p>}
         {frein && r.faisabilite < 0.95 && (
           <p>
-            Votre premier frein, {`«\u00a0${frein.label.charAt(0).toLowerCase() + frein.label.slice(1)}\u00a0»`}, ramène le gain atteignable à {`${Math.round(r.faisabilite * 100)}\u00a0%`} du potentiel.
+            Vos freins, à commencer par {`«\u00a0${frein.label.charAt(0).toLowerCase() + frein.label.slice(1)}\u00a0»`}, et vos outils actuels ramènent le gain atteignable à {`${Math.round(r.faisabilite * 100)}\u00a0%`} du potentiel.
           </p>
         )}
       </div>

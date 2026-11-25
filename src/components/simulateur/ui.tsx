@@ -92,12 +92,33 @@ export function Coquille({
           <Brand brandName="Botami" brandSuffix="Software" size={32} />
         )}
       </header>
-      <main className="bo-wrap w-full flex-1 pt-8 sm:pt-12 pb-32">{children}</main>
+      {/* Sur mobile, la barre « Continuer » suit le contenu : collée en bas, elle mangeait la place
+          laissée par le clavier et s'affichait avant que les réponses soient données. */}
+      <main className={cn("bo-wrap w-full flex-1 pt-8 sm:pt-12", pied ? "pb-6 sm:pb-32" : "pb-32")}>{children}</main>
       {pied && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-n-300 bg-cream/95 backdrop-blur">
-          <div className="bo-wrap py-3 sm:py-4 flex items-center justify-end gap-3">{pied}</div>
+        <div className="z-30 border-t border-n-300 bg-cream/95 sm:fixed sm:inset-x-0 sm:bottom-0 sm:backdrop-blur">
+          <div className="bo-wrap py-4 flex items-center justify-end gap-3">{pied}</div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ---------- Bloc qui apparaît après une réponse ---------- */
+/**
+ * Sur mobile, un bloc qui s'affiche (champ du site, poste, précision) peut naître sous le clavier.
+ * On le ramène au centre de l'écran, le temps que le clavier s'ouvre.
+ */
+export function Apparition({ children, className }: { children: React.ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!window.matchMedia?.("(max-width: 639px)").matches) return;
+    const t = setTimeout(() => ref.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 350);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div ref={ref} className={cn("animate-fade-up", className)}>
+      {children}
     </div>
   );
 }

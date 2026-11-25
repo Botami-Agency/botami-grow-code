@@ -27,7 +27,7 @@ import { analyseContenu, analyseRapide, nommerProjet, verifierSite } from "@/lib
 import { registrePlausible, trouvaillesSite, type EcranId, type LectureSite, type Parcours, type ResultatLookup } from "@/lib/simulateur/parcours";
 import { ArrowRightIcon } from "@/components/home/atoms";
 import { cn } from "@/lib/utils";
-import { BoutonAction, Champ, Coquille, Libelle, TitreQuestion, Tuile, ZoneTexte, logoDomaine, useRaccourcis } from "./ui";
+import { Apparition, BoutonAction, Champ, Coquille, Libelle, TitreQuestion, Tuile, ZoneTexte, logoDomaine, useRaccourcis } from "./ui";
 import { FicheEntreprise, LogoEntreprise } from "./Fiche";
 import { IllustrationLecture } from "./Illustrations";
 
@@ -128,16 +128,16 @@ export function Q1({ p, maj, aller }: PropsQuestion) {
           autoFocus
         />
         {p.nom.trim().length >= 2 && (
-          <div className="animate-fade-up">
+          <Apparition>
             <Libelle>Avez-vous un site internet ?</Libelle>
             <div className="grid grid-cols-2 gap-3">
               <Tuile label="Oui" icone={Globe} choisie={p.aSite === true} multi={false} onClick={() => maj({ aSite: true })} />
               <Tuile label="Pas encore" icone={CircleMinus} choisie={p.aSite === false} multi={false} onClick={() => maj({ aSite: false })} />
             </div>
-          </div>
+          </Apparition>
         )}
         {p.aSite && (
-          <div className="animate-fade-up">
+          <Apparition>
             <Champ
               id="site-url"
               label="Adresse du site"
@@ -160,7 +160,7 @@ export function Q1({ p, maj, aller }: PropsQuestion) {
             {etatSite === "injoignable" && (
               <p className="mt-1.5 text-[13px] text-amber-700">On ne trouve pas ce site. Vérifiez l'adresse, ou continuez sans.</p>
             )}
-          </div>
+          </Apparition>
         )}
       </div>
     </Question>
@@ -364,7 +364,7 @@ export function Q2({ p, maj, aller }: PropsQuestion) {
       {trouve ? (
         <TitreQuestion numero={2} avant="Voici " accent="ce qu'on a trouvé" apres=". C'est bien vous ?" sousTitre="Corrigez ce qui ne va pas : vos réponses priment pour la suite." />
       ) : (
-        <TitreQuestion numero={2} avant="Parlez-nous de " accent="votre activité" sousTitre="Trois informations suffisent pour adapter la suite." />
+        <TitreQuestion numero={2} avant="Parlez-nous de " accent="votre activité" sousTitre="Deux informations suffisent pour adapter la suite." />
       )}
 
       <div className="mt-8 max-w-3xl space-y-7">
@@ -379,27 +379,24 @@ export function Q2({ p, maj, aller }: PropsQuestion) {
           />
         )}
 
-        <div className="grid sm:grid-cols-[1fr_200px] gap-4">
+        {/* Pas de champ « Nombre de salariés » : il doublait la taille. L'effectif du registre, s'il existe, reste utilisé. */}
+        <div className="max-w-xl">
           <Champ id="secteur" label="Votre secteur d'activité" valeur={p.secteur} onChange={(v) => maj({ secteur: v.slice(0, 80) })} placeholder="Ex. Menuiserie, cabinet comptable, transport" />
-          <Champ
-            id="effectif"
-            label="Nombre de salariés"
-            valeur={p.effectif ? String(p.effectif) : ""}
-            inputMode="numeric"
-            onChange={(v) => {
-              const n = parseInt(v.replace(/\D/g, ""), 10);
-              const effectif = isFinite(n) && n > 0 ? Math.min(n, 100000) : null;
-              maj({ effectif, taille: tailleDepuisEffectif(effectif) ?? p.taille });
-            }}
-            placeholder="Ex. 12"
-          />
         </div>
 
         <div>
           <Libelle>Et la taille de l'entreprise ?</Libelle>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {TAILLES.map((t) => (
-              <Tuile key={t.id} label={t.label} icone={t.icone} multi={false} choisie={p.taille === t.id} onClick={() => maj({ taille: t.id })} />
+              <Tuile
+                key={t.id}
+                label={t.label}
+                icone={t.icone}
+                multi={false}
+                choisie={p.taille === t.id}
+                // Une taille qui contredit l'effectif du registre l'emporte : c'est la réponse du visiteur.
+                onClick={() => maj({ taille: t.id, effectif: tailleDepuisEffectif(p.effectif) === t.id ? p.effectif : null })}
+              />
             ))}
           </div>
         </div>
@@ -409,26 +406,33 @@ export function Q2({ p, maj, aller }: PropsQuestion) {
 }
 
 /* ================= Q3 — Rôle ================= */
-const POSTES_INDEPENDANT = [
-  { label: "Consultant", hint: "Je vends mon expertise" },
-  { label: "Artisan", hint: "Je travaille sur le terrain" },
-  { label: "Profession libérale", hint: "J'exerce en cabinet" },
-  { label: "Commerçant", hint: "Je vends en boutique ou en ligne" },
-];
+const POSTES_INDEPENDANT = [{ label: "Consultant" }, { label: "Artisan" }, { label: "Profession libérale" }, { label: "Commerçant" }];
+
+// Peu de choix et pas de description : l'intitulé exact ne change rien au résultat (retour d'Elias, 25/11/2026).
+const MAX_POSTES = 4;
 
 export function Q3({ p, maj, aller }: PropsQuestion) {
-  const effectif = p.effectif ?? TAILLES.find((t) => t.id === p.taille)?.effectifType ?? 5;
   const postes = useMemo(() => {
     if (p.statut === "dirigeant") return POSTES_DIRIGEANT;
     if (p.statut === "independant") return POSTES_INDEPENDANT;
-    const duSite = (p.lookup?.site?.postesSuggeres ?? []).map((label) => ({ label, hint: "Poste typique de votre secteur" }));
-    const support = POSTES_SUPPORT.slice(0, effectif >= 30 ? 7 : effectif >= 10 ? 4 : 2);
+    const duSite = (p.lookup?.site?.postesSuggeres ?? []).map((label) => ({ label }));
     const vus = new Set<string>();
-    return [...duSite, ...support].filter((x) => (vus.has(x.label) ? false : (vus.add(x.label), true)));
-  }, [p.statut, p.lookup, effectif]);
+    return [...duSite, ...POSTES_SUPPORT]
+      .filter((x) => (vus.has(x.label) ? false : (vus.add(x.label), true)))
+      .slice(0, MAX_POSTES);
+  }, [p.statut, p.lookup]);
+  const avecAutre = p.statut !== "dirigeant";
 
   const actif = !!p.statut && !!p.poste && (p.poste !== "Autre" || p.posteAutre.trim().length >= 2);
   const suivant = () => actif && aller("q4");
+  // Un poste choisi (hors « Autre ») fait passer à la question suivante, comme les pôles.
+  const minuteur = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => () => clearTimeout(minuteur.current), []);
+  const choisirPoste = (poste: string) => {
+    clearTimeout(minuteur.current);
+    maj({ poste });
+    if (poste !== "Autre") minuteur.current = setTimeout(() => aller("q4"), 550);
+  };
 
   return (
     <Question numero={3} precedent={() => aller("q2")} actif={actif} suivant={suivant}>
@@ -438,24 +442,43 @@ export function Q3({ p, maj, aller }: PropsQuestion) {
           <Libelle>Votre statut</Libelle>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {STATUTS.map((s) => (
-              <Tuile key={s.id} label={s.label} icone={s.icone} multi={false} choisie={p.statut === s.id} compacte onClick={() => maj({ statut: s.id, poste: "", posteAutre: "" })} />
+              <Tuile
+                key={s.id}
+                label={s.label}
+                icone={s.icone}
+                multi={false}
+                choisie={p.statut === s.id}
+                compacte
+                onClick={() => {
+                  clearTimeout(minuteur.current);
+                  maj({ statut: s.id, poste: "", posteAutre: "" });
+                }}
+              />
             ))}
           </div>
         </div>
         {p.statut && (
-          <div className="animate-fade-up">
+          <Apparition key={p.statut}>
             <Libelle>Votre poste</Libelle>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[...postes, { label: "Autre", hint: "Je précise moi-même" }].map((x) => (
-                <Tuile key={x.label} label={x.label} hint={x.hint} icone={x.label === "Autre" ? PenLine : undefined} multi={false} choisie={p.poste === x.label} onClick={() => maj({ poste: x.label })} />
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              {[...postes, ...(avecAutre ? [{ label: "Autre" }] : [])].map((x) => (
+                <Tuile
+                  key={x.label}
+                  label={x.label}
+                  icone={x.label === "Autre" ? PenLine : undefined}
+                  multi={false}
+                  compacte
+                  choisie={p.poste === x.label}
+                  onClick={() => choisirPoste(x.label)}
+                />
               ))}
             </div>
             {p.poste === "Autre" && (
-              <div className="mt-4 max-w-md animate-fade-up">
+              <Apparition className="mt-4 max-w-md">
                 <Champ id="poste-autre" label="Votre poste" valeur={p.posteAutre} onChange={(v) => maj({ posteAutre: v.slice(0, 60) })} autoFocus />
-              </div>
+              </Apparition>
             )}
-          </div>
+          </Apparition>
         )}
       </div>
     </Question>
@@ -583,9 +606,9 @@ export function Q6({ p, maj, aller }: PropsQuestion) {
         <Tuile label="Autre" hint="Je précise moi-même" icone={PenLine} choisie={autre} onClick={() => maj({ impacts: basculer(p.impacts, "autre") })} />
       </div>
       {autre && (
-        <div className="mt-4 max-w-xl animate-fade-up">
+        <Apparition className="mt-4 max-w-xl">
           <Champ id="impact-autre" label="Quel impact ?" valeur={p.impactAutre} onChange={(v) => maj({ impactAutre: v.slice(0, 200) })} autoFocus />
-        </div>
+        </Apparition>
       )}
     </Question>
   );
@@ -667,14 +690,14 @@ export function Q8({ p, maj, aller }: PropsQuestion) {
         </div>
       </div>
       {utilise && (
-        <div className="mt-9 animate-fade-up">
+        <Apparition className="mt-9">
           <Libelle>Pour quoi faire ? (facultatif)</Libelle>
           <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-3">
             {USAGES.map((u) => (
               <Tuile key={u.id} label={u.label} icone={u.icone} compacte choisie={p.usages.includes(u.id)} onClick={() => maj({ usages: basculer(p.usages, u.id) })} />
             ))}
           </div>
-        </div>
+        </Apparition>
       )}
     </Question>
   );
