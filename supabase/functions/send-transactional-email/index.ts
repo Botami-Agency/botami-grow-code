@@ -161,7 +161,14 @@ Deno.serve(async (req) => {
       if (reponses && typeof reponses === 'object') {
         const lines = Object.entries(reponses as Record<string, unknown>)
           .map(([k, v]) => {
-            const val = Array.isArray(v) ? v.join(', ') : v == null ? '' : String(v)
+            if (Array.isArray(v)) {
+              const val = v
+                .filter((item) => item !== null && typeof item !== 'object')
+                .join(', ')
+              return val.trim() ? `${k} : ${val}` : null
+            }
+            if (v !== null && typeof v === 'object') return null
+            const val = v == null ? '' : String(v)
             return val.trim() ? `${k} : ${val}` : null
           })
           .filter(Boolean) as string[]
