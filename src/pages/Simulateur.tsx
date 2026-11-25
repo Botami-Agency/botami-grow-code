@@ -1,15 +1,14 @@
 /**
  * Simulateur IA — /simulateur et /simulateur/merci.
  * Accueil → 10 questions (avec analyse du registre et du site) → mur de contact → résultat.
- * Filets : état gardé en session, modale de rappel quand la souris quitte la page.
+ * Filet : état gardé en session (un rechargement ne fait pas perdre les réponses).
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SEO from "@/components/seo/SEO";
 import Accueil from "@/components/simulateur/Accueil";
 import { Analyse, Q1, Q10, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, type PropsQuestion } from "@/components/simulateur/Questions";
 import { Resultat } from "@/components/simulateur/Resultat";
-import { ModaleRappel } from "@/components/simulateur/Modales";
 import { suivreEvenement } from "@/lib/simulateur/api";
 import { useParcours, type EcranId } from "@/lib/simulateur/parcours";
 
@@ -27,53 +26,10 @@ const QUESTIONS: Partial<Record<EcranId, (p: PropsQuestion) => JSX.Element>> = {
   q10: Q10,
 };
 
-const CLE_RAPPEL_VU = "botami.simulateur.rappel-vu";
-
-/** Ouvre la modale de rappel une seule fois, sur ordinateur, quand la souris file vers le haut. */
-function useSortieDePage(actif: boolean, ouvrir: () => void) {
-  useEffect(() => {
-    if (!actif || !window.matchMedia?.("(pointer: fine)").matches) return;
-    try {
-      if (sessionStorage.getItem(CLE_RAPPEL_VU)) return;
-    } catch {
-      /* stockage indisponible */
-    }
-    let dernierY = 0;
-    let dernierT = 0;
-    const declencher = () => {
-      try {
-        sessionStorage.setItem(CLE_RAPPEL_VU, "1");
-      } catch {
-        /* rien */
-      }
-      ouvrir();
-      nettoyer();
-    };
-    const quitte = (e: MouseEvent) => {
-      if (e.clientY <= 24) declencher();
-    };
-    const bouge = (e: MouseEvent) => {
-      const t = performance.now();
-      const vitesse = dernierT ? (dernierY - e.clientY) / (t - dernierT) : 0;
-      if (e.clientY < 40 && vitesse > 1.2) declencher();
-      dernierY = e.clientY;
-      dernierT = t;
-    };
-    const nettoyer = () => {
-      document.documentElement.removeEventListener("mouseleave", quitte);
-      window.removeEventListener("mousemove", bouge);
-    };
-    document.documentElement.addEventListener("mouseleave", quitte);
-    window.addEventListener("mousemove", bouge, { passive: true });
-    return nettoyer;
-  }, [actif, ouvrir]);
-}
-
 const Simulateur = () => {
   const { parcours: p, maj, recommencer } = useParcours();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [rappelOuvert, setRappelOuvert] = useState(false);
   const vueEnvoyee = useRef(false);
 
   useEffect(() => {
@@ -97,10 +53,6 @@ const Simulateur = () => {
     },
     [maj],
   );
-
-  const ouvrirRappel = useCallback(() => setRappelOuvert(true), []);
-  const enCours = !["accueil", "resultat"].includes(p.ecran);
-  useSortieDePage(enCours && p.nom.trim().length >= 2 && !p.contact && !p.rappel, ouvrirRappel);
 
   let ecran: JSX.Element;
   if (p.ecran === "resultat" || (pathname.endsWith("/merci") && p.contact)) {
@@ -133,12 +85,6 @@ const Simulateur = () => {
         noindex={pathname.endsWith("/merci")}
       />
       {ecran}
-      <ModaleRappel
-        ouverte={rappelOuvert}
-        onFermer={() => setRappelOuvert(false)}
-        parcours={p}
-        onEnvoye={(rappel) => maj({ rappel })}
-      />
     </div>
   );
 };

@@ -5,6 +5,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { forwardLeadToCrm } from "@/lib/forwardLeadToCrm";
 import type { Resultat } from "./bareme";
+import { detailParPole, hypothesesCalcul } from "./detail";
 import { ASSISTANTS, BUDGETS, FREINS, IMPACTS, OUTILS, POLE_PAR_ID, STATUTS, TAILLES } from "./donnees";
 import { registrePlausible, trouvaillesSite, type Contact, type LectureSite, type Parcours, type ResultatLookup } from "./parcours";
 
@@ -75,7 +76,9 @@ export function resumeLead(p: Parcours, r: Resultat | null): string {
     `Source : simulateur IA du site · ${p.poste || STATUTS.find((s) => s.id === p.statut)?.label || "rôle non précisé"} chez ${nomEntreprise(p)}`,
     `Secteur : ${p.secteur || "non précisé"} · Taille : ${TAILLES.find((t) => t.id === p.taille)?.label ?? "?"}${p.effectif ? ` (${p.effectif} salariés)` : ""}`,
     `Pôles : ${p.poles.map((x) => POLE_PAR_ID[x].label).join(", ") || "—"}`,
-    `Tâches : ${p.taches.join(" ; ") || "—"}${p.tachesLibre ? ` ; « ${p.tachesLibre} »` : ""}`,
+    // Avec un résultat, les tâches sont détaillées par pôle plus bas.
+    ...(r ? [] : [`Tâches : ${p.taches.join(" ; ") || "—"}`]),
+    ...(p.tachesLibre.trim() ? [`Tâches ajoutées : « ${p.tachesLibre.trim()} »`] : []),
     `Impacts : ${libelles(IMPACTS, p.impacts).join(" ; ") || "—"}${p.impactAutre ? ` ; « ${p.impactAutre} »` : ""}`,
     `Outils : ${libelles(OUTILS, p.outils).join(", ") || "—"} · Abonnements : ${BUDGETS.find((b) => b.id === p.budget)?.label ?? "?"} par mois`,
     `IA : ${p.noteIA ?? "?"}/10 · ${libelles(ASSISTANTS, p.assistants).join(", ") || "—"}`,
@@ -85,6 +88,11 @@ export function resumeLead(p: Parcours, r: Resultat | null): string {
     lignes.push(
       `Résultat affiché : ${r.heuresParMois} h/mois · ${r.equivalentTempsPlein} temps plein · ${r.economieParAn.toLocaleString("fr-FR")} €/an · abonnements sur 3 ans ${r.coutOutilsTroisAns.toLocaleString("fr-FR")} €`,
     );
+    // D'où viennent les heures : de quoi répondre au prospect pendant l'appel.
+    for (const d of detailParPole(p, r)) {
+      lignes.push(`  · ${d.label} ≈ ${d.heures} h/mois${d.taches.length ? ` : ${d.taches.join(" ; ")}` : " (aucune tâche cochée)"}`);
+    }
+    lignes.push(`Hypothèses du calcul (barème indicatif) : ${hypothesesCalcul(r)}`);
   }
   if (p.siteUrl) lignes.push(`Site : ${p.siteUrl}`);
   const t = trouvaillesSite(p.lookup);

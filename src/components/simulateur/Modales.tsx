@@ -1,15 +1,12 @@
 /**
- * Modales du simulateur : demande de rappel (sortie de page) et invitation de l'équipe.
- * Contient aussi le champ téléphone avec indicatif, partagé avec le mur de contact.
+ * Modale d'invitation de l'équipe, et champ téléphone avec indicatif (utilisé par le mur de contact).
  */
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy, Linkedin, Mail, MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { conversionLead, enregistrerLead, verifierEmail } from "@/lib/simulateur/api";
-import type { Contact, Parcours } from "@/lib/simulateur/parcours";
-import { BoutonAction, Champ } from "./ui";
-import theo from "@/assets/theo.webp";
-import elias from "@/assets/elias.webp";
+import { verifierEmail } from "@/lib/simulateur/api";
+import type { Contact } from "@/lib/simulateur/parcours";
+import { Champ } from "./ui";
 
 /* ---------- Téléphone ---------- */
 export const PAYS = [
@@ -166,95 +163,6 @@ function Modale({ ouverte, onFermer, children, titre }: { ouverte: boolean; onFe
   );
 }
 
-/* ---------- Modale de rappel ---------- */
-export function ModaleRappel({
-  ouverte,
-  onFermer,
-  parcours,
-  onEnvoye,
-}: {
-  ouverte: boolean;
-  onFermer: () => void;
-  parcours: Parcours;
-  onEnvoye: (c: Contact) => void;
-}) {
-  const f = useFormulaireContact(false);
-  const [envoi, setEnvoi] = useState<"repos" | "en_cours" | "fait">("repos");
-
-  const envoyer = async (e: React.FormEvent) => {
-    e.preventDefault();
-    f.setTente(true);
-    if (!f.valide || envoi !== "repos") return;
-    setEnvoi("en_cours");
-    const contact = f.contact();
-    await enregistrerLead({ parcours: { ...parcours, rappel: contact }, resultat: null, contact, origine: "rappel" });
-    conversionLead();
-    onEnvoye(contact);
-    setEnvoi("fait");
-  };
-
-  return (
-    <Modale ouverte={ouverte} onFermer={onFermer} titre="Demande de rappel">
-      {envoi === "fait" ? (
-        <div className="p-8 text-center">
-          <span className="mx-auto grid place-items-center w-12 h-12 rounded-full bg-ambre-bg text-ambre-dark">
-            <Check className="w-6 h-6" />
-          </span>
-          <p className="mt-4 font-display font-semibold text-[22px] text-ink">C'est noté.</p>
-          <p className="mt-2 text-[15px] text-n-700">Un membre de l'équipe vous rappelle rapidement. Vous pouvez aussi finir le simulateur.</p>
-          <BoutonAction className="mt-6" onClick={onFermer}>
-            Je continue le simulateur
-          </BoutonAction>
-        </div>
-      ) : (
-        <form onSubmit={envoyer} noValidate>
-          <div className="flex gap-4 p-7 pb-0 pr-14">
-            <div className="flex-1">
-              <p className="font-display font-semibold text-[24px] leading-tight text-ink">{"Pas le temps d'aller au bout\u00a0?"}</p>
-              <p className="mt-2 text-[15px] text-n-700">Un membre de l'équipe Botami vous rappelle pour faire le point avec vous.</p>
-            </div>
-            <div className="hidden sm:flex -space-x-3 flex-none pt-1">
-              <img src={theo} alt="" className="w-14 h-14 rounded-full object-cover border-2 border-white" />
-              <img src={elias} alt="" className="w-14 h-14 rounded-full object-cover object-top border-2 border-white" />
-            </div>
-          </div>
-          <div className="p-7 space-y-4">
-            <Champ id="rappel-nom" label="Prénom et nom" valeur={f.champs.nom} onChange={f.champs.setNom} autoComplete="name" erreur={f.erreurs.nom} placeholder="Camille Martin" />
-            <Champ
-              id="rappel-email"
-              label="Adresse e-mail"
-              type="email"
-              valeur={f.champs.email}
-              onChange={f.champs.setEmail}
-              onBlur={f.controlerEmail}
-              autoComplete="email"
-              erreur={f.erreurs.email}
-              placeholder="camille@votre-entreprise.fr"
-            />
-            <ChampTelephone label="Téléphone (facultatif)" valeur={f.champs.telephone} pays={f.champs.pays} onChange={f.champs.setTelephone} onPays={f.champs.setPays} erreur={f.erreurs.telephone} />
-            <div className="flex flex-wrap gap-3 pt-2">
-              <BoutonAction type="submit" desactive={envoi === "en_cours"}>
-                {envoi === "en_cours" ? "Envoi…" : "Je veux être rappelé"}
-              </BoutonAction>
-              <BoutonAction variante="contour" onClick={onFermer}>
-                Je continue
-              </BoutonAction>
-            </div>
-            <p className="text-[12px] leading-relaxed text-n-500">
-              En validant, vous acceptez d'être recontacté par Botami au sujet de votre projet. Vous pouvez vous y opposer à tout moment.{" "}
-              <a href="/politique-de-confidentialite" target="_blank" rel="noreferrer" className="underline">
-                Politique de confidentialité
-              </a>
-              .
-            </p>
-          </div>
-        </form>
-      )}
-    </Modale>
-  );
-}
-
-/* ---------- Modale d'invitation de l'équipe ---------- */
 export function ModalePartage({ ouverte, onFermer }: { ouverte: boolean; onFermer: () => void }) {
   const [copie, setCopie] = useState(false);
   const lien = `${window.location.origin}/simulateur?utm_source=partage&utm_medium=equipe`;

@@ -85,21 +85,15 @@ export const STATUTS: { id: StatutId; label: string; icone: LucideIcon }[] = [
   { id: "independant", label: "Indépendant", icone: User },
 ];
 
-export const POSTES_DIRIGEANT = [
-  { label: "Gérant", hint: "Je dirige la société" },
-  { label: "Président", hint: "Je préside la SAS" },
-  { label: "Directeur général", hint: "Je pilote l'activité" },
-  { label: "Associé", hint: "Je codirige avec d'autres" },
-];
+/** Intitulés proposés au dirigeant : volontairement peu nombreux, ils ne changent pas le résultat. */
+export const POSTES_DIRIGEANT = [{ label: "Gérant ou président" }, { label: "Directeur général" }, { label: "Associé" }];
 
+/** Postes proposés aux salariés, après ceux que l'IA a lus sur le site (4 au total). */
 export const POSTES_SUPPORT = [
-  { label: "Responsable commercial", hint: "Je développe les ventes" },
-  { label: "Responsable administratif et financier", hint: "Je tiens la gestion" },
-  { label: "Assistant de direction", hint: "J'appuie la direction" },
-  { label: "Responsable des opérations", hint: "Je fais tourner la production" },
-  { label: "Responsable RH", hint: "Je gère l'équipe" },
-  { label: "Comptable", hint: "Je tiens les comptes" },
-  { label: "Chef de projet", hint: "Je coordonne les projets" },
+  { label: "Responsable commercial" },
+  { label: "Responsable administratif et financier" },
+  { label: "Assistant de direction" },
+  { label: "Responsable des opérations" },
 ];
 
 /* ---------- Pôles et tâches ---------- */
