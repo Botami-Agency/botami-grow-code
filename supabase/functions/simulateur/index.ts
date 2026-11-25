@@ -3,11 +3,12 @@
 //   "analyse-rapide"  registre public + lecture technique du site (logo, outils, villes), moins de 2 s ;
 //   "analyse-contenu" lecture de 1 à 3 pages (Firecrawl si relié) puis extraction par IA ;
 //   "lookup"          les deux à la fois (compatibilité avec la première version de la page) ;
+//   "nommer-projet"   nom court de l'outil idéal (« générateur de devis »), repris en tête du lead ;
 //   "verifier-email", "verifier-site", "envoyer-resultat" (e-mail du résultat au prospect).
 // Le lead lui-même est enregistré côté navigateur dans la table leads (comme les autres formulaires).
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { avecDelai, lectureContenu, lectureTechnique } from "./lecture-site.ts";
+import { avecDelai, lectureContenu, lectureTechnique, nommerProjet } from "./lecture-site.ts";
 
 const BOOKING_URL = "https://calendly.com/elias-botami-agency/30min";
 const EMAIL_FROM = "Botami <contact@botami-agency.com>";
@@ -268,6 +269,14 @@ Deno.serve(async (req) => {
   try {
     const body = (await req.json()) as Json;
     const action = String(body?.action ?? "");
+
+    if (action === "nommer-projet") {
+      const projet = await nommerProjet(texte(body?.outilIdeal, 240), texte(body?.secteur, 80)).catch((e) => {
+        console.error("simulateur nommer-projet:", String(e));
+        return null;
+      });
+      return json({ projet });
+    }
 
     if (action === "analyse-rapide" || action === "analyse-contenu" || action === "lookup") {
       const nom = texte(body?.nom, 120);

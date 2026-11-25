@@ -397,7 +397,7 @@ Règles :
 - N'invente rien : chaque information vient du contenu fourni.
 - Si le contenu est vide ou illisible, renvoie {}.`;
 
-async function demanderIA(contenu: string): Promise<{ objet: Json; modele: string }> {
+export async function demanderIA(contenu: string, consigne = CONSIGNE): Promise<{ objet: Json; modele: string }> {
   const cle = Deno.env.get("LOVABLE_API_KEY");
   if (!cle) throw new Error("LOVABLE_API_KEY manquant");
   const debut = Date.now();
@@ -414,7 +414,7 @@ async function demanderIA(contenu: string): Promise<{ objet: Json; modele: strin
           body: JSON.stringify({
             model: modele,
             messages: [
-              { role: "system", content: CONSIGNE },
+              { role: "system", content: consigne },
               { role: "user", content: contenu },
             ],
           }),
@@ -460,6 +460,27 @@ function assainir(o: Json, contenuPlat: string) {
     tachesParPole: taches,
     postesSuggeres: liste(o?.postesSuggeres, 4, 50),
   };
+}
+
+/* ---------- Nom court du projet (outil idéal) ---------- */
+const CONSIGNE_PROJET = `Tu nommes en quelques mots l'outil logiciel qu'un dirigeant d'entreprise décrit.
+Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour : {"projet":""}
+Règles :
+- 2 à 5 mots, en français, sans article au début, minuscule initiale (sauf nom propre ou sigle).
+- Un nom d'outil, jamais une phrase ni un verbe. Exemples : « préparer mes devis pour moi » → « générateur de devis » ; « suivre mes chantiers depuis mon téléphone » → « application de suivi de chantier » ; « relancer automatiquement mes factures » → « outil de relance des factures ».
+- Reste fidèle à la description : n'ajoute aucune fonction.
+- Description vide ou incompréhensible : {"projet":""}.`;
+
+/** « préparer mes devis pour moi » → « générateur de devis ». Null si l'IA échoue ou répond hors cadre. */
+export async function nommerProjet(description: string, secteur: string): Promise<string | null> {
+  const d = description.trim().slice(0, 240);
+  if (d.length < 5) return null;
+  const { objet } = await demanderIA(`Description : « ${d} »\nSecteur de l'entreprise : ${secteur.trim().slice(0, 80) || "non précisé"}`, CONSIGNE_PROJET);
+  let nom = texte(objet?.projet, 80).replace(/^["'«“\s]+|["'»”.\s]+$/g, "");
+  if (nom.length < 3 || nom.length > 60 || /[\n{}]/.test(nom) || nom.split(/\s+/).length > 7) return null;
+  // Minuscule initiale, sauf sigle (« CRM chantier »).
+  if (!/^\p{Lu}{2}/u.test(nom)) nom = nom.charAt(0).toLowerCase() + nom.slice(1);
+  return nom;
 }
 
 const TAILLE_PAGE = { accueil: 6000, autre: 3500 };

@@ -162,6 +162,8 @@ export interface Parcours {
   usages: string[];
   freins: FreinId[];
   outilIdeal: string;
+  /** Nom court de l'outil idéal, donné par l'IA (« générateur de devis »). Repris en tête du lead. */
+  projetNom?: string | null;
   contact: Contact | null;
   rappel: Contact | null;
   utm: Record<string, string>;
@@ -208,6 +210,7 @@ export function nouveauParcours(): Parcours {
     usages: [],
     freins: [],
     outilIdeal: "",
+    projetNom: null,
     contact: null,
     rappel: null,
     utm: lireUtm(),
