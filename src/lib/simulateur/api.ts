@@ -50,9 +50,29 @@ export function nomEntreprise(p: Parcours) {
 const libelles = <T extends { id: string; label: string }>(liste: T[], ids: string[]) =>
   ids.map((id) => liste.find((x) => x.id === id)?.label ?? id);
 
+/** Nom court de l'outil idéal (« générateur de devis »). Null si l'IA ne répond pas à temps. */
+export async function nommerProjet(outilIdeal: string, secteur: string, delaiMs = 6000) {
+  if (outilIdeal.trim().length < 5) return null;
+  const r = await appeler<{ projet: string | null }>({ action: "nommer-projet", outilIdeal: outilIdeal.trim(), secteur }, delaiMs);
+  return r?.projet ?? null;
+}
+
+/**
+ * Première ligne du lead. Le CRM la lit pour rédiger le SMS et l'e-mail de bienvenue
+ * (« Votre générateur de devis nous intéresse ») : elle doit nommer le projet du prospect,
+ * pas l'outil qui a servi à le recueillir.
+ */
+function ligneProjet(p: Parcours) {
+  const outil = p.outilIdeal.trim().replace(/\s+/g, " ");
+  if (p.projetNom && outil) return `Projet : ${p.projetNom} (« ${outil} »)`;
+  if (outil) return `Projet : « ${outil} »`;
+  return "Projet : à préciser lors de l'appel";
+}
+
 export function resumeLead(p: Parcours, r: Resultat | null): string {
   const lignes = [
-    `Simulateur IA — ${p.poste || STATUTS.find((s) => s.id === p.statut)?.label || "rôle non précisé"} chez ${nomEntreprise(p)}`,
+    ligneProjet(p),
+    `Source : simulateur IA du site · ${p.poste || STATUTS.find((s) => s.id === p.statut)?.label || "rôle non précisé"} chez ${nomEntreprise(p)}`,
     `Secteur : ${p.secteur || "non précisé"} · Taille : ${TAILLES.find((t) => t.id === p.taille)?.label ?? "?"}${p.effectif ? ` (${p.effectif} salariés)` : ""}`,
     `Pôles : ${p.poles.map((x) => POLE_PAR_ID[x].label).join(", ") || "—"}`,
     `Tâches : ${p.taches.join(" ; ") || "—"}${p.tachesLibre ? ` ; « ${p.tachesLibre} »` : ""}`,
@@ -60,7 +80,6 @@ export function resumeLead(p: Parcours, r: Resultat | null): string {
     `Outils : ${libelles(OUTILS, p.outils).join(", ") || "—"} · Abonnements : ${BUDGETS.find((b) => b.id === p.budget)?.label ?? "?"} par mois`,
     `IA : ${p.noteIA ?? "?"}/10 · ${libelles(ASSISTANTS, p.assistants).join(", ") || "—"}`,
     `Freins : ${libelles(FREINS, p.freins).join(" ; ") || "—"}`,
-    `Outil idéal : ${p.outilIdeal ? `« ${p.outilIdeal} »` : "—"}`,
   ];
   if (r) {
     lignes.push(
@@ -81,7 +100,13 @@ export async function enregistrerLead(args: {
   contact: Contact;
   origine: "resultat" | "rappel";
 }): Promise<boolean> {
-  const { parcours: p, resultat, contact, origine } = args;
+  const { contact, resultat, origine } = args;
+  // Le nom du projet est demandé dès la question 10 ; s'il n'est pas encore arrivé, on l'attend un peu.
+  let p = args.parcours;
+  if (!p.projetNom && p.outilIdeal.trim()) {
+    const projetNom = await nommerProjet(p.outilIdeal, p.secteur, 4000).catch(() => null);
+    if (projetNom) p = { ...p, projetNom };
+  }
   const leadId = crypto.randomUUID();
   const situation = origine === "rappel" ? "Simulateur IA — demande de rappel" : "Simulateur IA";
   const entreprise = nomEntreprise(p) || null;

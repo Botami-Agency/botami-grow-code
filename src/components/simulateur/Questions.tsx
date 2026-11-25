@@ -23,7 +23,7 @@ import {
   type OutilId,
   type PoleId,
 } from "@/lib/simulateur/donnees";
-import { analyseContenu, analyseRapide, verifierSite } from "@/lib/simulateur/api";
+import { analyseContenu, analyseRapide, nommerProjet, verifierSite } from "@/lib/simulateur/api";
 import { registrePlausible, trouvaillesSite, type EcranId, type LectureSite, type Parcours, type ResultatLookup } from "@/lib/simulateur/parcours";
 import { ArrowRightIcon } from "@/components/home/atoms";
 import { cn } from "@/lib/utils";
@@ -709,7 +709,12 @@ export function Q9({ p, maj, aller }: PropsQuestion) {
 /* ================= Q10 — Outil idéal ================= */
 export function Q10({ p, maj, aller }: PropsQuestion) {
   const actif = p.outilIdeal.trim().length >= 5;
-  const suivant = () => actif && aller("resultat");
+  const suivant = () => {
+    if (!actif) return;
+    // Nom court du projet pour le CRM, demandé en arrière-plan pendant que le visiteur lit son résultat.
+    if (!p.projetNom) nommerProjet(p.outilIdeal, p.secteur).then((projetNom) => projetNom && maj({ projetNom }));
+    aller("resultat");
+  };
   return (
     <Question numero={10} precedent={() => aller("q9")} actif={actif} suivant={suivant} libelle="Je découvre mon résultat">
       <TitreQuestion
@@ -725,7 +730,7 @@ export function Q10({ p, maj, aller }: PropsQuestion) {
           id="outil-ideal"
           label="Votre outil idéal"
           valeur={p.outilIdeal}
-          onChange={(v) => maj({ outilIdeal: v.slice(0, 240) })}
+          onChange={(v) => maj({ outilIdeal: v.slice(0, 240), projetNom: null })}
           placeholder="Ex. un outil qui prépare mes devis à partir d'un message vocal"
           autoFocus
         />
