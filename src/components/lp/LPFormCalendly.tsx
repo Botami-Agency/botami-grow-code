@@ -126,18 +126,7 @@ const LPFormCalendly = ({
       sourceRoute,
     };
 
-    const recipients = ["elias@botami-agency.com", "theo@botami-agency.com"];
-    recipients.forEach((recipient) => {
-      supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "new-lead-notification",
-          recipientEmail: recipient,
-          idempotencyKey: `lead-notif-${leadId}-${recipient}`,
-          leadId,
-          templateData,
-        },
-      });
-    });
+    supabase.functions.invoke("notify-new-lead", { body: { leadId, templateData } });
 
     if (route) {
       supabase.from("landing_page_events").insert({ route, event_type: "cta_click" }).then();

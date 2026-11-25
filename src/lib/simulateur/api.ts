@@ -169,19 +169,7 @@ export async function enregistrerLead(args: {
     message,
     sourceRoute: ROUTE_SIMULATEUR,
   };
-  ["elias@botami-agency.com", "theo@botami-agency.com"].forEach((destinataire) => {
-    supabase.functions
-      .invoke("send-transactional-email", {
-        body: {
-          templateName: "new-lead-notification",
-          recipientEmail: destinataire,
-          idempotencyKey: `simulateur-${leadId}-${destinataire}`,
-          leadId,
-          templateData,
-        },
-      })
-      .catch(() => {});
-  });
+  supabase.functions.invoke("notify-new-lead", { body: { leadId, templateData } }).catch(() => {});
 
   if (error) console.error("simulateur : enregistrement du lead échoué", error.message);
   return !error;

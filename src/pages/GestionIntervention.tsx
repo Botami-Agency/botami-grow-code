@@ -223,16 +223,7 @@ const GestionIntervention = () => {
           fourchette_max: data.fourchette_max, delai: data.delai,
         } }, null, 2),
       };
-      ["elias@botami-agency.com", "theo@botami-agency.com"].forEach((recipient) => {
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "new-lead-notification",
-            recipientEmail: recipient,
-            idempotencyKey: `cdc-notif-${email}-${recipient}-${Date.now()}`,
-            templateData,
-          },
-        });
-      });
+      supabase.functions.invoke("notify-new-lead", { body: { templateData } });
 
       clearInterval(stepTimer);
       setGenStep(GEN_STEPS.length - 1);

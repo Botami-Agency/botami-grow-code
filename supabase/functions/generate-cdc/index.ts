@@ -317,15 +317,11 @@ Deno.serve(async (req) => {
 
     // Notification interne — la ligne leads est la source de vérité
     if (!leadError) {
-      for (const recipient of ["elias@botami-agency.com", "theo@botami-agency.com"]) {
-        try {
-          await supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "new-lead-notification",
-              recipientEmail: recipient,
-              idempotencyKey: `lead-notif-${leadId}-${recipient}`,
-              leadId,
-              templateData: {
+      try {
+        await supabase.functions.invoke("notify-new-lead", {
+          body: {
+            leadId,
+            templateData: {
                 firstName: "Lead cahier des charges",
                 email,
                 phone: phone || undefined,
@@ -333,12 +329,11 @@ Deno.serve(async (req) => {
                 situation: "Générateur de cahier des charges",
                 sourceRoute,
               },
-            },
-          });
-        } catch (e) {
+          },
+        });
+      } catch (e) {
           console.error("Notification interne échouée:", String(e));
         }
-      }
     }
 
     // Envoi de l'email automatique au lead (CDC en PDF + lien de réservation)

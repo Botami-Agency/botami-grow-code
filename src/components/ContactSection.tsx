@@ -80,17 +80,7 @@ const ContactSection = () => {
       sourceRoute,
     };
 
-    ["elias@botami-agency.com", "theo@botami-agency.com"].forEach((recipient) => {
-      supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "new-lead-notification",
-          recipientEmail: recipient,
-          idempotencyKey: `lead-notif-${leadId}-${recipient}`,
-          leadId,
-          templateData,
-        },
-      });
-    });
+    supabase.functions.invoke("notify-new-lead", { body: { leadId, templateData } });
 
     // Lead Meta uniquement : la conversion Google Ads n'a jamais été branchée sur ce formulaire.
     try { (window as any).fbq?.("track", "Lead"); } catch {}
