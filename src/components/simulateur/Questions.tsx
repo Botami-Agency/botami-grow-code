@@ -3,7 +3,7 @@
  * Une question par écran, bouton bloqué tant que la réponse manque.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleAlert, Check, Globe, LoaderCircle, CircleMinus, PenLine } from "lucide-react";
+import { CircleAlert, Check, Globe, LoaderCircle, CircleMinus, PenLine, ScanSearch } from "lucide-react";
 import {
   ASSISTANTS,
   BUDGETS,
@@ -27,8 +27,9 @@ import { analyseContenu, analyseRapide, verifierSite } from "@/lib/simulateur/ap
 import { registrePlausible, trouvaillesSite, type EcranId, type LectureSite, type Parcours, type ResultatLookup } from "@/lib/simulateur/parcours";
 import { ArrowRightIcon } from "@/components/home/atoms";
 import { cn } from "@/lib/utils";
-import { BoutonAction, Champ, Coquille, Libelle, TitreQuestion, Tuile, ZoneTexte, useRaccourcis } from "./ui";
+import { BoutonAction, Champ, Coquille, Libelle, TitreQuestion, Tuile, ZoneTexte, logoDomaine, useRaccourcis } from "./ui";
 import { FicheEntreprise, LogoEntreprise } from "./Fiche";
+import { IllustrationLecture } from "./Illustrations";
 
 export interface PropsQuestion {
   p: Parcours;
@@ -253,6 +254,21 @@ export function Analyse({ p, maj, aller }: PropsQuestion) {
 
   const tech = rapide?.technique ?? null;
   const reg = rapide ? registrePlausible({ ...rapide, site: contenu ?? null }, p.nom) : null;
+  const idsFaits = etapes.slice(0, faites).map((e) => e.id);
+  const illustration = {
+    registre:
+      idsFaits.includes("registre") && reg
+        ? [reg.forme, reg.anneeCreation && `depuis ${reg.anneeCreation}`].filter(Boolean).join(" · ") || "Fiche au registre"
+        : null,
+    logo: idsFaits.includes("technique") ? tech?.logo ?? null : null,
+    outils: idsFaits.includes("technique") ? (tech?.outils ?? []).map((o) => o.nom) : [],
+    villes: idsFaits.includes("ia")
+      ? [...(contenu?.villes ?? []), ...(tech?.villes ?? [])].filter((v, i, l) => l.indexOf(v) === i)
+      : idsFaits.includes("technique")
+        ? tech?.villes ?? []
+        : [],
+    services: idsFaits.includes("ia") ? contenu?.services ?? [] : [],
+  };
   const resultat = (id: IdEtape): { texte: string; trouve: boolean; logo?: string | null } => {
     if (id === "registre") {
       if (!reg) return { texte: avecSite ? "Aucune fiche à ce nom : on s'appuie sur votre site" : "Aucune fiche à ce nom", trouve: false };
@@ -282,48 +298,54 @@ export function Analyse({ p, maj, aller }: PropsQuestion) {
     <Coquille>
       <TitreQuestion
         surtitre="Analyse en cours"
+        picto={ScanSearch}
         avant="On rassemble ce qui existe déjà sur "
         accent={p.nom.trim()}
         sousTitre={avecSite ? "Notre IA consulte le registre public et lit votre site. Comptez une dizaine de secondes." : "On consulte le registre public des entreprises."}
       />
-      <ul className="mt-9 max-w-xl space-y-3" aria-live="polite">
-        {etapes.map(({ id, label }, i) => {
-          const etat = i < faites ? "fait" : i === faites ? "en_cours" : "attente";
-          const r = etat === "fait" ? resultat(id) : null;
-          return (
-            <li
-              key={id}
-              className={cn(
-                "flex items-start gap-3 rounded-card border bg-white px-5 py-4 text-[15px] transition-all duration-500",
-                etat === "attente" ? "border-n-300/60 opacity-40" : "border-n-300",
-              )}
-            >
-              <span className="grid place-items-center w-6 h-6 flex-none">
-                {etat === "fait" ? (
-                  r?.trouve ? (
-                    <span className="grid place-items-center w-5 h-5 rounded-full bg-ambre text-white">
-                      <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
-                    </span>
+      <div className="mt-8 grid items-start gap-8 lg:mt-10 lg:grid-cols-[minmax(0,34rem)_minmax(0,25rem)] lg:gap-14">
+        <div className="lg:order-2 lg:pt-1">
+          <IllustrationLecture site={avecSite ? p.siteUrl.trim() : null} nom={p.nom.trim()} enCours={faites < etapes.length} t={illustration} />
+        </div>
+        <ul className="space-y-3 lg:order-1" aria-live="polite">
+          {etapes.map(({ id, label }, i) => {
+            const etat = i < faites ? "fait" : i === faites ? "en_cours" : "attente";
+            const r = etat === "fait" ? resultat(id) : null;
+            return (
+              <li
+                key={id}
+                className={cn(
+                  "flex items-start gap-3 rounded-card border bg-white px-5 py-4 text-[15px] transition-all duration-500",
+                  etat === "attente" ? "border-n-300/60 opacity-40" : "border-n-300",
+                )}
+              >
+                <span className="grid place-items-center w-6 h-6 flex-none">
+                  {etat === "fait" ? (
+                    r?.trouve ? (
+                      <span className="grid place-items-center w-5 h-5 rounded-full bg-ambre text-white">
+                        <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden />
+                      </span>
+                    ) : (
+                      <CircleMinus className="w-5 h-5 text-n-500" aria-hidden />
+                    )
                   ) : (
-                    <CircleMinus className="w-5 h-5 text-n-500" aria-hidden />
-                  )
-                ) : (
-                  <LoaderCircle className={cn("w-5 h-5 text-ambre", etat === "en_cours" && "animate-spin")} aria-hidden />
-                )}
-              </span>
-              <span className="min-w-0">
-                <span className={cn("block", etat === "fait" ? "text-ink" : "text-n-700")}>{label}</span>
-                {r && (
-                  <span className="mt-1 flex items-center gap-2 text-[13px] text-n-500 animate-fade-up">
-                    {r.logo && <LogoEntreprise src={r.logo} nom={p.nom} taille="petit" />}
-                    <span className="min-w-0">{r.texte}</span>
-                  </span>
-                )}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+                    <LoaderCircle className={cn("w-5 h-5 text-ambre", etat === "en_cours" && "animate-spin")} aria-hidden />
+                  )}
+                </span>
+                <span className="min-w-0">
+                  <span className={cn("block", etat === "fait" ? "text-ink" : "text-n-700")}>{label}</span>
+                  {r && (
+                    <span className="mt-1 flex items-center gap-2 text-[13px] text-n-500 animate-fade-up">
+                      {r.logo && <LogoEntreprise src={r.logo} nom={p.nom} taille="petit" />}
+                      <span className="min-w-0">{r.texte}</span>
+                    </span>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </Coquille>
   );
 }
@@ -556,7 +578,7 @@ export function Q6({ p, maj, aller }: PropsQuestion) {
       <TitreQuestion numero={6} avant="Ces tâches ont surtout " accent="quel impact" apres=" sur l'entreprise ?" sousTitre="Plusieurs réponses possibles." />
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-4xl">
         {IMPACTS.map((x) => (
-          <Tuile key={x.id} label={x.label} choisie={p.impacts.includes(x.id)} onClick={() => maj({ impacts: basculer(p.impacts, x.id) })} />
+          <Tuile key={x.id} label={x.label} icone={x.icone} choisie={p.impacts.includes(x.id)} onClick={() => maj({ impacts: basculer(p.impacts, x.id) })} />
         ))}
         <Tuile label="Autre" hint="Je précise moi-même" icone={PenLine} choisie={autre} onClick={() => maj({ impacts: basculer(p.impacts, "autre") })} />
       </div>
@@ -578,7 +600,7 @@ export function Q7({ p, maj, aller }: PropsQuestion) {
       <TitreQuestion numero={7} avant="Avec quels " accent="outils" apres=" travaillez-vous aujourd'hui ?" sousTitre="Toutes les réponses sont valables, le papier compris." />
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {OUTILS.map((x) => (
-          <Tuile key={x.id} label={x.label} hint={x.hint} compacte choisie={p.outils.includes(x.id)} onClick={() => maj({ outils: basculer<OutilId>(p.outils, x.id) })} />
+          <Tuile key={x.id} label={x.label} hint={x.hint} icone={x.icone} compacte choisie={p.outils.includes(x.id)} onClick={() => maj({ outils: basculer<OutilId>(p.outils, x.id) })} />
         ))}
       </div>
       <div className="mt-9">
@@ -634,16 +656,22 @@ export function Q8({ p, maj, aller }: PropsQuestion) {
         <Libelle>Quelles IA utilisez-vous ?</Libelle>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {ASSISTANTS.map((a) => (
-            <Tuile key={a.id} label={a.label} compacte choisie={p.assistants.includes(a.id)} onClick={() => choisirAssistant(a.id)} />
+            <Tuile
+              key={a.id}
+              label={a.label}
+              logo={a.domaine ? logoDomaine(a.domaine) : undefined}
+              icone={a.icone}
+              compacte
+              choisie={p.assistants.includes(a.id)} onClick={() => choisirAssistant(a.id)} />
           ))}
         </div>
       </div>
       {utilise && (
         <div className="mt-9 animate-fade-up">
           <Libelle>Pour quoi faire ? (facultatif)</Libelle>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-3">
             {USAGES.map((u) => (
-              <Tuile key={u.id} label={u.label} compacte choisie={p.usages.includes(u.id)} onClick={() => maj({ usages: basculer(p.usages, u.id) })} />
+              <Tuile key={u.id} label={u.label} icone={u.icone} compacte choisie={p.usages.includes(u.id)} onClick={() => maj({ usages: basculer(p.usages, u.id) })} />
             ))}
           </div>
         </div>
@@ -666,6 +694,7 @@ export function Q9({ p, maj, aller }: PropsQuestion) {
             <Tuile
               key={f.id}
               label={f.label}
+              icone={f.icone}
               choisie={rang >= 0}
               rang={rang >= 0 ? rang + 1 : undefined}
               onClick={() => maj({ freins: basculer<FreinId>(p.freins, f.id) })}
@@ -684,6 +713,7 @@ export function Q10({ p, maj, aller }: PropsQuestion) {
   return (
     <Question numero={10} precedent={() => aller("q9")} actif={actif} suivant={suivant} libelle="Je découvre mon résultat">
       <TitreQuestion
+        numero={10}
         surtitre="Question 10 · la dernière"
         avant="Si vous pouviez créer l'outil idéal, "
         accent="il ferait quoi"

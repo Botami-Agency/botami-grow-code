@@ -2,13 +2,43 @@
  * Atomes d'interface du simulateur : coquille, titres, tuiles de choix, champs.
  * Charte Botami : crème, ambre pour l'action, Space Grotesk et DM Sans.
  */
-import { Check, ChevronLeft } from "lucide-react";
+import {
+  Blocks,
+  Building2,
+  Check,
+  ChevronLeft,
+  Construction,
+  Gauge,
+  IdCard,
+  LayoutGrid,
+  ListChecks,
+  Sparkles,
+  Store,
+  WandSparkles,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Brand } from "@/components/home/atoms";
 
 export const TOTAL_QUESTIONS = 10;
+
+/** Pictogramme de chaque question, affiché à côté de « Question N ». */
+const PICTOS: Record<number, LucideIcon> = {
+  1: Building2,
+  2: Store,
+  3: IdCard,
+  4: LayoutGrid,
+  5: ListChecks,
+  6: Gauge,
+  7: Blocks,
+  8: Sparkles,
+  9: Construction,
+  10: WandSparkles,
+};
+
+/** Logo d'un produit tiers (ChatGPT, Claude…), servi par le service d'icônes de Google depuis le site de l'éditeur. */
+export const logoDomaine = (domaine: string) => `https://www.google.com/s2/favicons?domain=${domaine}&sz=64`;
 
 /* ---------- Coquille avec barre de progression ---------- */
 export function Coquille({
@@ -24,7 +54,15 @@ export function Coquille({
 }) {
   const progression = numero ? (numero / TOTAL_QUESTIONS) * 100 : 0;
   return (
-    <div className="min-h-[100dvh] flex flex-col">
+    <div className="relative isolate min-h-[100dvh] flex flex-col">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(55% 45% at 100% 0%, rgba(196,135,44,0.13), transparent 70%), radial-gradient(45% 35% at 0% 100%, rgba(196,135,44,0.07), transparent 70%)",
+        }}
+      />
       <header className="bo-wrap w-full pt-5 sm:pt-6">
         {numero ? (
           <div className="flex items-center gap-4 sm:gap-6">
@@ -72,6 +110,7 @@ export function TitreQuestion({
   apres,
   sousTitre,
   surtitre,
+  picto,
 }: {
   numero?: number;
   avant?: string;
@@ -79,16 +118,23 @@ export function TitreQuestion({
   apres?: string;
   sousTitre?: React.ReactNode;
   surtitre?: string;
+  picto?: LucideIcon;
 }) {
+  const Picto = picto ?? (numero ? PICTOS[numero] : undefined);
   const ref = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     ref.current?.focus({ preventScroll: true });
   }, []);
   return (
     <div className="max-w-3xl animate-fade-up">
-      <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-ambre-dark">
-        {surtitre ?? `Question ${numero}`}
-      </p>
+      <div className="flex items-center gap-3">
+        {Picto && (
+          <span className="grid place-items-center w-9 h-9 rounded-[10px] bg-ambre-bg text-ambre-dark ring-1 ring-ambre/20" aria-hidden>
+            <Picto className="w-[18px] h-[18px]" strokeWidth={2} />
+          </span>
+        )}
+        <p className="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-ambre-dark">{surtitre ?? `Question ${numero}`}</p>
+      </div>
       <h1
         ref={ref}
         tabIndex={-1}
@@ -112,6 +158,7 @@ export function Tuile({
   label,
   hint,
   icone: Icone,
+  logo,
   choisie,
   rang,
   onClick,
@@ -122,6 +169,8 @@ export function Tuile({
   label: string;
   hint?: string;
   icone?: LucideIcon;
+  /** Logo d'un produit (URL d'image), affiché à la place de l'icône. */
+  logo?: string;
   choisie: boolean;
   rang?: number;
   onClick: () => void;
@@ -146,7 +195,11 @@ export function Tuile({
       )}
     >
       <div className="flex items-start gap-3">
-        {Icone && <Icone className={cn("w-5 h-5 mt-0.5 flex-none", choisie ? "text-ambre-dark" : "text-n-500")} aria-hidden />}
+        {logo ? (
+          <LogoProduit src={logo} />
+        ) : (
+          Icone && <Icone className={cn("w-5 h-5 mt-0.5 flex-none", choisie ? "text-ambre-dark" : "text-n-500")} aria-hidden />
+        )}
         <div className="flex-1 min-w-0">
           <p className={cn("font-medium text-ink leading-snug", compacte ? "text-[14px]" : "text-[15px]")}>{label}</p>
           {hint && <p className="mt-1 text-[13px] leading-snug text-n-500">{hint}</p>}
@@ -163,6 +216,23 @@ export function Tuile({
         </span>
       </div>
     </button>
+  );
+}
+
+function LogoProduit({ src }: { src: string }) {
+  const [visible, setVisible] = useState(true);
+  if (!visible) return <Sparkles className="w-5 h-5 mt-0.5 flex-none text-n-500" aria-hidden />;
+  return (
+    <img
+      src={src}
+      alt=""
+      width={22}
+      height={22}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setVisible(false)}
+      className="w-[22px] h-[22px] mt-px flex-none rounded-[6px] object-contain"
+    />
   );
 }
 

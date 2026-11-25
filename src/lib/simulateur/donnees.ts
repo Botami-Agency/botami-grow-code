@@ -4,26 +4,55 @@
  */
 import type { LucideIcon } from "lucide-react";
 import {
+  Brain,
   Briefcase,
   Building,
   Building2,
   Calculator,
   ChartColumn,
+  CircleMinus,
+  Clock,
   Compass,
+  Contact,
   Factory,
+  FileText,
   FolderOpen,
+  Frown,
   GraduationCap,
   Handshake,
+  Hourglass,
+  Languages,
   Laptop,
+  Lightbulb,
+  Lock,
+  Mail,
   Megaphone,
   MessageCircle,
+  NotebookPen,
   Package,
+  PenLine,
+  PiggyBank,
+  Receipt,
   Scale,
+  ScrollText,
+  Search,
+  Sheet,
+  ShieldQuestion,
   ShoppingCart,
+  Signature,
+  Snail,
+  Sparkles,
+  SpellCheck,
+  SquareKanban,
+  ThumbsDown,
+  TrendingDown,
+  TriangleAlert,
   User,
   UserCog,
   Users,
+  UsersRound,
   Wallet,
+  Workflow,
 } from "lucide-react";
 
 export const HEURES_PAR_MOIS = 151.67;
@@ -250,14 +279,14 @@ export function tachesDuPole(pole: PoleId, dirigeant: boolean, effectif: number,
 }
 
 /* ---------- Impacts ---------- */
-export const IMPACTS = [
-  { id: "temps_dirigeant", label: "Elles me prennent du temps personnellement" },
-  { id: "temps_equipe", label: "Elles occupent l'équipe au détriment du reste" },
-  { id: "ventes", label: "Elles ralentissent les ventes" },
-  { id: "erreurs", label: "Elles génèrent des erreurs" },
-  { id: "clients", label: "Elles dégradent l'expérience client" },
-  { id: "charge", label: "Elles créent de la charge mentale" },
-  { id: "croissance", label: "Elles freinent notre croissance" },
+export const IMPACTS: { id: string; label: string; icone: LucideIcon }[] = [
+  { id: "temps_dirigeant", label: "Elles me prennent du temps personnellement", icone: Clock },
+  { id: "temps_equipe", label: "Elles occupent l'équipe au détriment du reste", icone: Users },
+  { id: "ventes", label: "Elles ralentissent les ventes", icone: TrendingDown },
+  { id: "erreurs", label: "Elles génèrent des erreurs", icone: TriangleAlert },
+  { id: "clients", label: "Elles dégradent l'expérience client", icone: Frown },
+  { id: "charge", label: "Elles créent de la charge mentale", icone: Brain },
+  { id: "croissance", label: "Elles freinent notre croissance", icone: Snail },
 ];
 
 /* ---------- Outils ---------- */
@@ -277,21 +306,21 @@ export type OutilId =
   | "automatisation"
   | "papier";
 
-export const OUTILS: { id: OutilId; label: string; hint: string; structurant: boolean }[] = [
-  { id: "messagerie", label: "Messagerie et agenda", hint: "Gmail, Outlook", structurant: false },
-  { id: "bureautique", label: "Suite bureautique", hint: "Word, Excel, Google Docs", structurant: false },
-  { id: "tableur_maison", label: "Tableurs faits maison", hint: "Fichiers Excel bricolés", structurant: false },
-  { id: "crm", label: "CRM", hint: "HubSpot, Pipedrive, Salesforce", structurant: true },
-  { id: "compta", label: "Logiciel de comptabilité", hint: "Pennylane, Sage, QuickBooks", structurant: true },
-  { id: "facturation", label: "Devis et facturation", hint: "Axonaut, Sellsy, Tiime", structurant: true },
-  { id: "erp", label: "Logiciel métier ou ERP", hint: "Odoo, Divalto, outil du secteur", structurant: true },
-  { id: "projet", label: "Gestion de projet", hint: "Trello, Notion, Monday", structurant: true },
-  { id: "rh_paie", label: "Paie et RH", hint: "PayFit, Lucca, Silae", structurant: true },
-  { id: "signature", label: "Signature électronique", hint: "Yousign, Docusign", structurant: true },
-  { id: "vente", label: "Caisse ou e-commerce", hint: "Shopify, WooCommerce, caisse", structurant: true },
-  { id: "stockage", label: "Fichiers partagés", hint: "Drive, Dropbox, SharePoint", structurant: true },
-  { id: "automatisation", label: "Automatisations", hint: "Zapier, Make, n8n", structurant: true },
-  { id: "papier", label: "Encore beaucoup de papier", hint: "Carnets, formulaires imprimés", structurant: false },
+export const OUTILS: { id: OutilId; label: string; hint: string; structurant: boolean; icone: LucideIcon }[] = [
+  { id: "messagerie", label: "Messagerie et agenda", hint: "Gmail, Outlook", structurant: false, icone: Mail },
+  { id: "bureautique", label: "Suite bureautique", hint: "Word, Excel, Google Docs", structurant: false, icone: FileText },
+  { id: "tableur_maison", label: "Tableurs faits maison", hint: "Fichiers Excel bricolés", structurant: false, icone: Sheet },
+  { id: "crm", label: "CRM", hint: "HubSpot, Pipedrive, Salesforce", structurant: true, icone: Contact },
+  { id: "compta", label: "Logiciel de comptabilité", hint: "Pennylane, Sage, QuickBooks", structurant: true, icone: Calculator },
+  { id: "facturation", label: "Devis et facturation", hint: "Axonaut, Sellsy, Tiime", structurant: true, icone: Receipt },
+  { id: "erp", label: "Logiciel métier ou ERP", hint: "Odoo, Divalto, outil du secteur", structurant: true, icone: Factory },
+  { id: "projet", label: "Gestion de projet", hint: "Trello, Notion, Monday", structurant: true, icone: SquareKanban },
+  { id: "rh_paie", label: "Paie et RH", hint: "PayFit, Lucca, Silae", structurant: true, icone: Wallet },
+  { id: "signature", label: "Signature électronique", hint: "Yousign, Docusign", structurant: true, icone: Signature },
+  { id: "vente", label: "Caisse ou e-commerce", hint: "Shopify, WooCommerce, caisse", structurant: true, icone: ShoppingCart },
+  { id: "stockage", label: "Fichiers partagés", hint: "Drive, Dropbox, SharePoint", structurant: true, icone: FolderOpen },
+  { id: "automatisation", label: "Automatisations", hint: "Zapier, Make, n8n", structurant: true, icone: Workflow },
+  { id: "papier", label: "Encore beaucoup de papier", hint: "Carnets, formulaires imprimés", structurant: false, icone: NotebookPen },
 ];
 
 export type BudgetId = "moins_100" | "100_300" | "300_800" | "800_2000" | "plus_2000" | "inconnu";
@@ -308,40 +337,41 @@ export const BUDGETS: { id: BudgetId; label: string; mensuel: number | null }[] 
 export const ABONNEMENT_PAR_PERSONNE = 60;
 
 /* ---------- Usage de l'IA ---------- */
-export const ASSISTANTS = [
-  { id: "chatgpt", label: "ChatGPT" },
-  { id: "claude", label: "Claude" },
-  { id: "gemini", label: "Gemini" },
-  { id: "copilot", label: "Copilot" },
-  { id: "mistral", label: "Le Chat de Mistral" },
-  { id: "perplexity", label: "Perplexity" },
-  { id: "deepseek", label: "DeepSeek" },
-  { id: "grok", label: "Grok" },
-  { id: "midjourney", label: "Midjourney" },
-  { id: "autre", label: "Une autre IA" },
-  { id: "aucun", label: "Aucune" },
+/** `domaine` : site de l'éditeur, d'où vient le logo affiché sur la tuile. */
+export const ASSISTANTS: { id: string; label: string; domaine?: string; icone?: LucideIcon }[] = [
+  { id: "chatgpt", label: "ChatGPT", domaine: "chatgpt.com" },
+  { id: "claude", label: "Claude", domaine: "claude.ai" },
+  { id: "gemini", label: "Gemini", domaine: "gemini.google.com" },
+  { id: "copilot", label: "Copilot", domaine: "copilot.microsoft.com" },
+  { id: "mistral", label: "Le Chat de Mistral", domaine: "mistral.ai" },
+  { id: "perplexity", label: "Perplexity", domaine: "perplexity.ai" },
+  { id: "deepseek", label: "DeepSeek", domaine: "deepseek.com" },
+  { id: "grok", label: "Grok", domaine: "grok.com" },
+  { id: "midjourney", label: "Midjourney", domaine: "midjourney.com" },
+  { id: "autre", label: "Une autre IA", icone: Sparkles },
+  { id: "aucun", label: "Aucune", icone: CircleMinus },
 ];
 
-export const USAGES = [
-  { id: "emails", label: "Rédiger mes e-mails" },
-  { id: "idees", label: "Trouver des idées" },
-  { id: "resumes", label: "Résumer des documents" },
-  { id: "contenu", label: "Rédiger du contenu" },
-  { id: "recherche", label: "Chercher de l'information" },
-  { id: "traduction", label: "Traduire" },
-  { id: "chiffres", label: "Analyser des chiffres" },
-  { id: "relecture", label: "Relire et corriger" },
+export const USAGES: { id: string; label: string; icone: LucideIcon }[] = [
+  { id: "emails", label: "Rédiger mes e-mails", icone: Mail },
+  { id: "idees", label: "Trouver des idées", icone: Lightbulb },
+  { id: "resumes", label: "Résumer des documents", icone: ScrollText },
+  { id: "contenu", label: "Rédiger du contenu", icone: PenLine },
+  { id: "recherche", label: "Chercher de l'information", icone: Search },
+  { id: "traduction", label: "Traduire", icone: Languages },
+  { id: "chiffres", label: "Analyser des chiffres", icone: ChartColumn },
+  { id: "relecture", label: "Relire et corriger", icone: SpellCheck },
 ];
 
 /* ---------- Freins ---------- */
 export type FreinId = "temps" | "par_ou" | "competences" | "confiance" | "donnees" | "budget" | "equipe" | "decu";
-export const FREINS: { id: FreinId; label: string; penalite: number }[] = [
-  { id: "temps", label: "On n'a pas le temps de s'y mettre", penalite: 0.05 },
-  { id: "par_ou", label: "On ne sait pas par où commencer", penalite: 0.03 },
-  { id: "competences", label: "Personne ne maîtrise le sujet en interne", penalite: 0.05 },
-  { id: "confiance", label: "On doute de la fiabilité des résultats", penalite: 0.05 },
-  { id: "donnees", label: "Nos données sont sensibles", penalite: 0.08 },
-  { id: "budget", label: "Le budget n'est pas là", penalite: 0.06 },
-  { id: "equipe", label: "L'équipe est réticente", penalite: 0.07 },
-  { id: "decu", label: "On a essayé et on a été déçus", penalite: 0.04 },
+export const FREINS: { id: FreinId; label: string; penalite: number; icone: LucideIcon }[] = [
+  { id: "temps", label: "On n'a pas le temps de s'y mettre", penalite: 0.05, icone: Hourglass },
+  { id: "par_ou", label: "On ne sait pas par où commencer", penalite: 0.03, icone: Compass },
+  { id: "competences", label: "Personne ne maîtrise le sujet en interne", penalite: 0.05, icone: GraduationCap },
+  { id: "confiance", label: "On doute de la fiabilité des résultats", penalite: 0.05, icone: ShieldQuestion },
+  { id: "donnees", label: "Nos données sont sensibles", penalite: 0.08, icone: Lock },
+  { id: "budget", label: "Le budget n'est pas là", penalite: 0.06, icone: PiggyBank },
+  { id: "equipe", label: "L'équipe est réticente", penalite: 0.07, icone: UsersRound },
+  { id: "decu", label: "On a essayé et on a été déçus", penalite: 0.04, icone: ThumbsDown },
 ];
