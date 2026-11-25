@@ -1,6 +1,23 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
+// PGMQ message shape returned by read_email_batch; the JSON payload stays loose
+// because its fields are forwarded straight to the email sender.
+type EmailMessage = {
+  msg_id: number
+  read_ct: number
+  enqueued_at?: string
+  message: Record<string, any>
+}
+
+// createClient() called with (url, key) infers Database as `any`. Using
+// ReturnType<typeof createClient> instead instantiates the generic defaults
+// (Tables = never), which makes insert() and rpc() reject every argument.
+function createQueueClient(url: string, key: string) {
+  return createClient(url, key)
+}
+type QueueClient = ReturnType<typeof createQueueClient>
+
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_SEND_DELAY_MS = 200
@@ -54,9 +71,9 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: ReturnType<typeof createClient>,
+  supabase: QueueClient,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: EmailMessage,
   reason: string
 ): Promise<void> {
   const payload = msg.message
@@ -111,7 +128,7 @@ Deno.serve(async (req) => {
     )
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = createQueueClient(supabaseUrl, supabaseServiceKey)
 
   // 1. Check rate-limit cooldown and read queue config
   const { data: state } = await supabase
@@ -137,7 +154,7 @@ Deno.serve(async (req) => {
 
   // 2. Process auth_emails first (priority), then transactional_emails
   for (const queue of ['auth_emails', 'transactional_emails']) {
-    const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
+    const { data: batch, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
       batch_size: batchSize,
       vt: 30,
@@ -148,7 +165,8 @@ Deno.serve(async (req) => {
       continue
     }
 
-    if (!messages?.length) continue
+    const messages = (batch ?? []) as EmailMessage[]
+    if (!messages.length) continue
 
     // Retry budget is based on real send failures, not pgmq read_ct.
     // read_ct increments for every message in a claimed batch, including
