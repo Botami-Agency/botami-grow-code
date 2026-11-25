@@ -8,6 +8,13 @@
       "when": 1795519007961,
       "tag": "0000_restrict_profiles_select",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795610214495,
+      "tag": "0001_harden_email_functions_and_leads_insert",
+      "breakpoints": true
     }
   ]
 }
